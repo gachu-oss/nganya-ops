@@ -5,6 +5,7 @@ import Auth from './components/Auth'
 import FleetList from './components/FleetList'
 import CrewList from './components/CrewList'
 import TripLogs from './components/TripLogs'
+import MaintenanceLog from './components/MaintenanceLog'
 
 function App() {
   const [session, setSession] = useState(null)
@@ -69,6 +70,16 @@ function App() {
               >
                 Trips
               </button>
+              <button
+                onClick={() => setActiveTab('maintenance')}
+                className={`px-3 py-1 text-sm font-medium ${
+                  activeTab === 'maintenance'
+                    ? 'bg-gray-900 text-white'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                Maintenance
+              </button>
             </nav>
           </div>
 
@@ -85,6 +96,7 @@ function App() {
         {activeTab === 'fleet' && <FleetList />}
         {activeTab === 'crew' && <CrewList />}
         {activeTab === 'trips' && <TripLogs />}
+        {activeTab === 'maintenance' && <MaintenanceLog />}
       </main>
     </div>
   )
