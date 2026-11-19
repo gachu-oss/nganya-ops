@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
-import { supabase } from './supabaseClient'
+import { BrowserRouter, Routes, Route, NavLink, useNavigate } from 'react-router-dom'
+import { AuthProvider, useAuth } from './context/AuthContext'
+import ProtectedRoute from './components/ProtectedRoute'
 import LandingPage from './components/LandingPage'
 import Auth from './components/Auth'
 import Dashboard from './components/Dashboard'
@@ -8,49 +9,20 @@ import CrewList from './components/CrewList'
 import TripLogs from './components/TripLogs'
 import MaintenanceLog from './components/MaintenanceLog'
 
-function App() {
-  const [session, setSession] = useState(null)
-  const [authLoading, setAuthLoading] = useState(true)
-  const [showAuth, setShowAuth] = useState(false)
-  const [activeTab, setActiveTab] = useState('dashboard')
+function LandingWrapper() {
+  const navigate = useNavigate()
+  return <LandingPage onEnterApp={() => navigate('/login')} />
+}
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setAuthLoading(false)
-    })
+function AppLayout({ children }) {
+  const { user, signOut } = useAuth()
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-      setAuthLoading(false)
-    })
-
-    return () => subscription.unsubscribe()
-  }, [])
-
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center text-sm text-gray-600">
-        Loading NganyaOps...
-      </div>
-    )
-  }
-
-  if (!session) {
-    if (showAuth) {
-      return <Auth onBack={() => setShowAuth(false)} />
-    }
-    return <LandingPage onEnterApp={() => setShowAuth(true)} />
-  }
-
-  const tabs = [
-    { id: 'dashboard', label: 'Dashboard' },
-    { id: 'fleet', label: 'Fleet' },
-    { id: 'crew', label: 'Crew' },
-    { id: 'trips', label: 'Trips' },
-    { id: 'maintenance', label: 'Maintenance' },
+  const navItems = [
+    { to: '/dashboard', label: 'Dashboard' },
+    { to: '/fleet', label: 'Fleet' },
+    { to: '/crew', label: 'Crew' },
+    { to: '/trips', label: 'Trips' },
+    { to: '/maintenance', label: 'Maintenance' },
   ]
 
   return (
@@ -63,28 +35,28 @@ function App() {
               <span className="ml-2 text-xs text-gray-500">Fleet Ops</span>
             </div>
             <nav className="flex flex-wrap gap-1.5">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`px-3 py-1.5 text-sm font-medium transition-colors ${
-                    activeTab === tab.id
-                      ? 'bg-gray-900 text-white'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }`}
+              {navItems.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className={({ isActive }) =>
+                    `px-3 py-1.5 text-sm font-medium transition-colors ${
+                      isActive
+                        ? 'bg-gray-900 text-white'
+                        : 'text-gray-700 hover:bg-gray-100'
+                    }`
+                  }
                 >
-                  {tab.label}
-                </button>
+                  {item.label}
+                </NavLink>
               ))}
             </nav>
           </div>
 
           <div className="flex items-center gap-4">
-            <span className="text-xs text-gray-500 hidden sm:inline">
-              {session.user.email}
-            </span>
+            <span className="text-xs text-gray-500 hidden sm:inline">{user?.email}</span>
             <button
-              onClick={() => supabase.auth.signOut()}
+              onClick={signOut}
               className="text-xs text-gray-700 hover:text-gray-900 underline"
             >
               Log Out
@@ -93,14 +65,77 @@ function App() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-6">
-        {activeTab === 'dashboard' && <Dashboard />}
-        {activeTab === 'fleet' && <FleetList />}
-        {activeTab === 'crew' && <CrewList />}
-        {activeTab === 'trips' && <TripLogs />}
-        {activeTab === 'maintenance' && <MaintenanceLog />}
-      </main>
+      <main className="max-w-5xl mx-auto px-4 py-6">{children}</main>
     </div>
+  )
+}
+
+export function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/" element={<LandingWrapper />} />
+      <Route path="/login" element={<Auth />} />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <Dashboard />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/fleet"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <FleetList />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/crew"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <CrewList />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/trips"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <TripLogs />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/maintenance"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <MaintenanceLog />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
+  )
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </AuthProvider>
   )
 }
 
