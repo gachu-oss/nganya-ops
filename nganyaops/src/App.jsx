@@ -10,22 +10,33 @@ import MaintenanceLog from './components/MaintenanceLog'
 
 function App() {
   const [session, setSession] = useState(null)
+  const [authLoading, setAuthLoading] = useState(true)
   const [showAuth, setShowAuth] = useState(false)
   const [activeTab, setActiveTab] = useState('dashboard')
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
+      setAuthLoading(false)
     })
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
+      setAuthLoading(false)
     })
 
     return () => subscription.unsubscribe()
   }, [])
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center text-sm text-gray-600">
+        Loading NganyaOps...
+      </div>
+    )
+  }
 
   if (!session) {
     if (showAuth) {
@@ -34,72 +45,51 @@ function App() {
     return <LandingPage onEnterApp={() => setShowAuth(true)} />
   }
 
+  const tabs = [
+    { id: 'dashboard', label: 'Dashboard' },
+    { id: 'fleet', label: 'Fleet' },
+    { id: 'crew', label: 'Crew' },
+    { id: 'trips', label: 'Trips' },
+    { id: 'maintenance', label: 'Maintenance' },
+  ]
+
   return (
     <div className="min-h-screen bg-gray-100 text-gray-900">
       <header className="bg-white border-b border-gray-300">
         <div className="max-w-5xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-6">
-            <span className="font-bold text-lg">NganyaOps</span>
-            <nav className="flex flex-wrap gap-2">
-              <button
-                onClick={() => setActiveTab('dashboard')}
-                className={`px-3 py-1 text-sm font-medium ${
-                  activeTab === 'dashboard'
-                    ? 'bg-gray-900 text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                Dashboard
-              </button>
-              <button
-                onClick={() => setActiveTab('fleet')}
-                className={`px-3 py-1 text-sm font-medium ${
-                  activeTab === 'fleet'
-                    ? 'bg-gray-900 text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                Fleet
-              </button>
-              <button
-                onClick={() => setActiveTab('crew')}
-                className={`px-3 py-1 text-sm font-medium ${
-                  activeTab === 'crew'
-                    ? 'bg-gray-900 text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                Crew
-              </button>
-              <button
-                onClick={() => setActiveTab('trips')}
-                className={`px-3 py-1 text-sm font-medium ${
-                  activeTab === 'trips'
-                    ? 'bg-gray-900 text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                Trips
-              </button>
-              <button
-                onClick={() => setActiveTab('maintenance')}
-                className={`px-3 py-1 text-sm font-medium ${
-                  activeTab === 'maintenance'
-                    ? 'bg-gray-900 text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                Maintenance
-              </button>
+            <div>
+              <span className="font-bold text-lg tracking-tight">NganyaOps</span>
+              <span className="ml-2 text-xs text-gray-500">Fleet Ops</span>
+            </div>
+            <nav className="flex flex-wrap gap-1.5">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`px-3 py-1.5 text-sm font-medium transition-colors ${
+                    activeTab === tab.id
+                      ? 'bg-gray-900 text-white'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
             </nav>
           </div>
 
-          <button
-            onClick={() => supabase.auth.signOut()}
-            className="text-xs text-gray-600 hover:text-gray-900 underline"
-          >
-            Log Out ({session.user.email})
-          </button>
+          <div className="flex items-center gap-4">
+            <span className="text-xs text-gray-500 hidden sm:inline">
+              {session.user.email}
+            </span>
+            <button
+              onClick={() => supabase.auth.signOut()}
+              className="text-xs text-gray-700 hover:text-gray-900 underline"
+            >
+              Log Out
+            </button>
+          </div>
         </div>
       </header>
 
