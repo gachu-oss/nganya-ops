@@ -3,6 +3,7 @@ import { supabase } from '../supabaseClient'
 
 function FleetList() {
   const [vehicles, setVehicles] = useState([])
+  const [todayNetByPlate, setTodayNetByPlate] = useState({})
   const [plateNumber, setPlateNumber] = useState('')
   const [nickname, setNickname] = useState('')
   const [route, setRoute] = useState('')
@@ -12,6 +13,7 @@ function FleetList() {
 
   useEffect(() => {
     fetchVehicles()
+    fetchTodayPerformance()
   }, [])
 
   async function fetchVehicles() {
@@ -22,6 +24,27 @@ function FleetList() {
 
     if (!error && data) {
       setVehicles(data)
+    }
+  }
+
+  async function fetchTodayPerformance() {
+    const today = new Date().toISOString().split('T')[0]
+    const { data, error } = await supabase
+      .from('trip_logs')
+      .select('plate_number, gross_revenue, fuel_cost, crew_allowance, other_expenses')
+      .eq('trip_date', today)
+
+    if (!error && data) {
+      const totals = {}
+      data.forEach((log) => {
+        const net =
+          Number(log.gross_revenue || 0) -
+          Number(log.fuel_cost || 0) -
+          Number(log.crew_allowance || 0) -
+          Number(log.other_expenses || 0)
+        totals[log.plate_number] = (totals[log.plate_number] || 0) + net
+      })
+      setTodayNetByPlate(totals)
     }
   }
 
@@ -154,6 +177,7 @@ function FleetList() {
               <th className="p-3 font-semibold">Nickname</th>
               <th className="p-3 font-semibold">Route</th>
               <th className="p-3 font-semibold">Daily Target</th>
+              <th className="p-3 font-semibold">Today&apos;s Target Check</th>
               <th className="p-3 font-semibold">Status</th>
               <th className="p-3 font-semibold">Actions</th>
             </tr>
@@ -161,46 +185,69 @@ function FleetList() {
           <tbody>
             {filteredVehicles.length === 0 ? (
               <tr>
-                <td colSpan="6" className="p-4 text-gray-500 text-center">
+                <td colSpan="7" className="p-4 text-gray-500 text-center">
                   No matching vehicles found.
                 </td>
               </tr>
             ) : (
-              filteredVehicles.map((v) => (
-                <tr key={v.id} className="border-b border-gray-200">
-                  <td className="p-3 font-mono font-semibold">{v.plate_number}</td>
-                  <td className="p-3">{v.nickname}</td>
-                  <td className="p-3">{v.route}</td>
-                  <td className="p-3 font-mono">KES {Number(v.daily_target).toLocaleString()}</td>
-                  <td className="p-3">
-                    <span
-                      className={`text-xs font-semibold px-2 py-0.5 ${
-                        v.status === 'Active'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-amber-100 text-amber-800'
-                      }`}
-                    >
-                      {v.status}
-                    </span>
-                  </td>
-                  <td className="p-3 space-x-3">
-                    <button
-                      type="button"
-                      onClick={() => toggleStatus(v)}
-                      className="text-xs underline text-gray-700 hover:text-gray-900"
-                    >
-                      Set {v.status === 'Active' ? 'Garage' : 'Active'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteVehicle(v.id, v.plate_number)}
-                      className="text-xs underline text-red-600 hover:text-red-800"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))
+              filteredVehicles.map((v) => {
+                const hasLogsToday = Object.prototype.hasOwnProperty.call(
+                  todayNetByPlate,
+                  v.plate_number
+                )
+                const todayNet = todayNetByPlate[v.plate_number] || 0
+                const target = Number(v.daily_target || 0)
+                const hitTarget = todayNet >= target
+
+                return (
+                  <tr key={v.id} className="border-b border-gray-200">
+                    <td className="p-3 font-mono font-semibold">{v.plate_number}</td>
+                    <td className="p-3">{v.nickname}</td>
+                    <td className="p-3">{v.route}</td>
+                    <td className="p-3 font-mono">KES {target.toLocaleString()}</td>
+                    <td className="p-3">
+                      {!hasLogsToday ? (
+                        <span className="text-xs text-gray-500">No logs today</span>
+                      ) : hitTarget ? (
+                        <span className="text-xs font-semibold px-2 py-0.5 bg-green-100 text-green-800">
+                          Target Hit (KES {todayNet.toLocaleString()})
+                        </span>
+                      ) : (
+                        <span className="text-xs font-semibold px-2 py-0.5 bg-red-100 text-red-800">
+                          Shortfall (KES {todayNet.toLocaleString()})
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-3">
+                      <span
+                        className={`text-xs font-semibold px-2 py-0.5 ${
+                          v.status === 'Active'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-amber-100 text-amber-800'
+                        }`}
+                      >
+                        {v.status}
+                      </span>
+                    </td>
+                    <td className="p-3 space-x-3">
+                      <button
+                        type="button"
+                        onClick={() => toggleStatus(v)}
+                        className="text-xs underline text-gray-700 hover:text-gray-900"
+                      >
+                        Set {v.status === 'Active' ? 'Garage' : 'Active'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteVehicle(v.id, v.plate_number)}
+                        className="text-xs underline text-red-600 hover:text-red-800"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                )
+              })
             )}
           </tbody>
         </table>
