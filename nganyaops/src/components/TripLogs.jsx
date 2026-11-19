@@ -8,6 +8,9 @@ function TripLogs() {
   const [tripDate, setTripDate] = useState(() => new Date().toISOString().split('T')[0])
   const [tripsCount, setTripsCount] = useState('')
   const [grossRevenue, setGrossRevenue] = useState('')
+  const [fuelCost, setFuelCost] = useState('')
+  const [crewAllowance, setCrewAllowance] = useState('')
+  const [otherExpenses, setOtherExpenses] = useState('')
 
   useEffect(() => {
     fetchLogs()
@@ -51,12 +54,18 @@ function TripLogs() {
         trip_date: tripDate,
         trips_count: Number(tripsCount),
         gross_revenue: Number(grossRevenue),
+        fuel_cost: Number(fuelCost || 0),
+        crew_allowance: Number(crewAllowance || 0),
+        other_expenses: Number(otherExpenses || 0),
       },
     ])
 
     if (!error) {
       setTripsCount('')
       setGrossRevenue('')
+      setFuelCost('')
+      setCrewAllowance('')
+      setOtherExpenses('')
       fetchLogs()
     }
   }
@@ -64,8 +73,8 @@ function TripLogs() {
   return (
     <div className="space-y-6">
       <form onSubmit={handleAddLog} className="bg-white p-4 border border-gray-300">
-        <h2 className="font-bold text-gray-900 mb-3">Log Daily Trip & Revenue</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+        <h2 className="font-bold text-gray-900 mb-3">Log Daily Trip, Revenue & Expenses</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-3">
           <select
             value={plateNumber}
             onChange={(e) => setPlateNumber(e.target.value)}
@@ -108,6 +117,34 @@ function TripLogs() {
             required
           />
         </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <input
+            type="number"
+            min="0"
+            placeholder="Fuel Cost (KES)"
+            value={fuelCost}
+            onChange={(e) => setFuelCost(e.target.value)}
+            className="border border-gray-300 px-3 py-2 text-sm"
+          />
+          <input
+            type="number"
+            min="0"
+            placeholder="Crew Allowance (KES)"
+            value={crewAllowance}
+            onChange={(e) => setCrewAllowance(e.target.value)}
+            className="border border-gray-300 px-3 py-2 text-sm"
+          />
+          <input
+            type="number"
+            min="0"
+            placeholder="Stage / Other Expenses (KES)"
+            value={otherExpenses}
+            onChange={(e) => setOtherExpenses(e.target.value)}
+            className="border border-gray-300 px-3 py-2 text-sm"
+          />
+        </div>
+
         <button
           type="submit"
           disabled={vehicles.length === 0}
@@ -124,27 +161,49 @@ function TripLogs() {
               <th className="p-3 font-semibold">Date</th>
               <th className="p-3 font-semibold">Matatu</th>
               <th className="p-3 font-semibold">Trips</th>
-              <th className="p-3 font-semibold">Gross Revenue</th>
+              <th className="p-3 font-semibold">Gross</th>
+              <th className="p-3 font-semibold">Fuel</th>
+              <th className="p-3 font-semibold">Crew & Other</th>
+              <th className="p-3 font-semibold">Net Profit</th>
             </tr>
           </thead>
           <tbody>
             {logs.length === 0 ? (
               <tr>
-                <td colSpan="4" className="p-4 text-gray-500 text-center">
+                <td colSpan="7" className="p-4 text-gray-500 text-center">
                   No trip logs recorded yet.
                 </td>
               </tr>
             ) : (
-              logs.map((log) => (
-                <tr key={log.id} className="border-b border-gray-200">
-                  <td className="p-3 font-mono">{log.trip_date}</td>
-                  <td className="p-3 font-mono font-semibold">{log.plate_number}</td>
-                  <td className="p-3">{log.trips_count}</td>
-                  <td className="p-3 font-mono">
-                    KES {Number(log.gross_revenue).toLocaleString()}
-                  </td>
-                </tr>
-              ))
+              logs.map((log) => {
+                const fuel = Number(log.fuel_cost || 0)
+                const otherTotal = Number(log.crew_allowance || 0) + Number(log.other_expenses || 0)
+                const net = Number(log.gross_revenue) - fuel - otherTotal
+
+                return (
+                  <tr key={log.id} className="border-b border-gray-200">
+                    <td className="p-3 font-mono">{log.trip_date}</td>
+                    <td className="p-3 font-mono font-semibold">{log.plate_number}</td>
+                    <td className="p-3">{log.trips_count}</td>
+                    <td className="p-3 font-mono">
+                      KES {Number(log.gross_revenue).toLocaleString()}
+                    </td>
+                    <td className="p-3 font-mono text-gray-700">
+                      KES {fuel.toLocaleString()}
+                    </td>
+                    <td className="p-3 font-mono text-gray-700">
+                      KES {otherTotal.toLocaleString()}
+                    </td>
+                    <td
+                      className={`p-3 font-mono font-semibold ${
+                        net >= 0 ? 'text-green-700' : 'text-red-600'
+                      }`}
+                    >
+                      KES {net.toLocaleString()}
+                    </td>
+                  </tr>
+                )
+              })
             )}
           </tbody>
         </table>
