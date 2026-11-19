@@ -12,6 +12,9 @@ function TripLogs() {
   const [crewAllowance, setCrewAllowance] = useState('')
   const [otherExpenses, setOtherExpenses] = useState('')
 
+  const [filterPlate, setFilterPlate] = useState('All')
+  const [filterDate, setFilterDate] = useState('')
+
   useEffect(() => {
     fetchLogs()
     fetchActiveVehicles()
@@ -69,6 +72,25 @@ function TripLogs() {
       fetchLogs()
     }
   }
+
+  async function handleDeleteLog(id, plate, date) {
+    const confirmed = window.confirm(`Delete shift log for ${plate} on ${date}?`)
+    if (!confirmed) return
+
+    const { error } = await supabase.from('trip_logs').delete().eq('id', id)
+
+    if (!error) {
+      fetchLogs()
+    }
+  }
+
+  const loggedPlates = [...new Set(logs.map((log) => log.plate_number))]
+
+  const filteredLogs = logs.filter((log) => {
+    const matchesPlate = filterPlate === 'All' || log.plate_number === filterPlate
+    const matchesDate = !filterDate || log.trip_date === filterDate
+    return matchesPlate && matchesDate
+  })
 
   return (
     <div className="space-y-6">
@@ -154,6 +176,43 @@ function TripLogs() {
         </button>
       </form>
 
+      <div className="bg-white p-3 border border-gray-300 flex flex-col sm:flex-row gap-3 items-center justify-between">
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <select
+            value={filterPlate}
+            onChange={(e) => setFilterPlate(e.target.value)}
+            className="border border-gray-300 px-3 py-2 text-sm bg-white"
+          >
+            <option value="All">All Matatus</option>
+            {loggedPlates.map((plate) => (
+              <option key={plate} value={plate}>
+                {plate}
+              </option>
+            ))}
+          </select>
+
+          <input
+            type="date"
+            value={filterDate}
+            onChange={(e) => setFilterDate(e.target.value)}
+            className="border border-gray-300 px-3 py-2 text-sm"
+          />
+        </div>
+
+        {(filterPlate !== 'All' || filterDate) && (
+          <button
+            type="button"
+            onClick={() => {
+              setFilterPlate('All')
+              setFilterDate('')
+            }}
+            className="text-xs underline text-gray-700 hover:text-gray-900"
+          >
+            Clear Filters
+          </button>
+        )}
+      </div>
+
       <div className="bg-white border border-gray-300 overflow-x-auto">
         <table className="w-full text-left border-collapse text-sm">
           <thead>
@@ -165,17 +224,18 @@ function TripLogs() {
               <th className="p-3 font-semibold">Fuel</th>
               <th className="p-3 font-semibold">Crew & Other</th>
               <th className="p-3 font-semibold">Net Profit</th>
+              <th className="p-3 font-semibold">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {logs.length === 0 ? (
+            {filteredLogs.length === 0 ? (
               <tr>
-                <td colSpan="7" className="p-4 text-gray-500 text-center">
-                  No trip logs recorded yet.
+                <td colSpan="8" className="p-4 text-gray-500 text-center">
+                  No matching trip logs found.
                 </td>
               </tr>
             ) : (
-              logs.map((log) => {
+              filteredLogs.map((log) => {
                 const fuel = Number(log.fuel_cost || 0)
                 const otherTotal = Number(log.crew_allowance || 0) + Number(log.other_expenses || 0)
                 const net = Number(log.gross_revenue) - fuel - otherTotal
@@ -200,6 +260,15 @@ function TripLogs() {
                       }`}
                     >
                       KES {net.toLocaleString()}
+                    </td>
+                    <td className="p-3">
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteLog(log.id, log.plate_number, log.trip_date)}
+                        className="text-xs underline text-red-600 hover:text-red-800"
+                      >
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 )
