@@ -7,6 +7,8 @@ function FleetList() {
   const [nickname, setNickname] = useState('')
   const [route, setRoute] = useState('')
   const [dailyTarget, setDailyTarget] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState('All')
 
   useEffect(() => {
     fetchVehicles()
@@ -69,6 +71,17 @@ function FleetList() {
     }
   }
 
+  const filteredVehicles = vehicles.filter((v) => {
+    const matchesStatus = statusFilter === 'All' || v.status === statusFilter
+    const query = searchTerm.toLowerCase()
+    const matchesSearch =
+      v.plate_number.toLowerCase().includes(query) ||
+      v.nickname.toLowerCase().includes(query) ||
+      v.route.toLowerCase().includes(query)
+
+    return matchesStatus && matchesSearch
+  })
+
   return (
     <div className="space-y-6">
       <form onSubmit={handleAddVehicle} className="bg-white p-4 border border-gray-300">
@@ -114,6 +127,25 @@ function FleetList() {
         </button>
       </form>
 
+      <div className="bg-white p-3 border border-gray-300 flex flex-col sm:flex-row gap-3 justify-between">
+        <input
+          type="text"
+          placeholder="Search by plate, nickname, or route..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="border border-gray-300 px-3 py-2 text-sm flex-1"
+        />
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="border border-gray-300 px-3 py-2 text-sm bg-white"
+        >
+          <option value="All">All Statuses</option>
+          <option value="Active">Active Only</option>
+          <option value="Garage">In Garage</option>
+        </select>
+      </div>
+
       <div className="bg-white border border-gray-300 overflow-x-auto">
         <table className="w-full text-left border-collapse text-sm">
           <thead>
@@ -127,14 +159,14 @@ function FleetList() {
             </tr>
           </thead>
           <tbody>
-            {vehicles.length === 0 ? (
+            {filteredVehicles.length === 0 ? (
               <tr>
                 <td colSpan="6" className="p-4 text-gray-500 text-center">
-                  No vehicles added yet.
+                  No matching vehicles found.
                 </td>
               </tr>
             ) : (
-              vehicles.map((v) => (
+              filteredVehicles.map((v) => (
                 <tr key={v.id} className="border-b border-gray-200">
                   <td className="p-3 font-mono font-semibold">{v.plate_number}</td>
                   <td className="p-3">{v.nickname}</td>
