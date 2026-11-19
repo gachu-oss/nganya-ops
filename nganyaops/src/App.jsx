@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from './supabaseClient'
 import LandingPage from './components/LandingPage'
 import Auth from './components/Auth'
+import Dashboard from './components/Dashboard'
 import FleetList from './components/FleetList'
 import CrewList from './components/CrewList'
 import TripLogs from './components/TripLogs'
@@ -10,7 +11,7 @@ import MaintenanceLog from './components/MaintenanceLog'
 function App() {
   const [session, setSession] = useState(null)
   const [showAuth, setShowAuth] = useState(false)
-  const [activeTab, setActiveTab] = useState('fleet')
+  const [activeTab, setActiveTab] = useState('dashboard')
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -36,10 +37,20 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-100 text-gray-900">
       <header className="bg-white border-b border-gray-300">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-6">
+        <div className="max-w-5xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-6">
             <span className="font-bold text-lg">NganyaOps</span>
-            <nav className="flex gap-2">
+            <nav className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setActiveTab('dashboard')}
+                className={`px-3 py-1 text-sm font-medium ${
+                  activeTab === 'dashboard'
+                    ? 'bg-gray-900 text-white'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                Dashboard
+              </button>
               <button
                 onClick={() => setActiveTab('fleet')}
                 className={`px-3 py-1 text-sm font-medium ${
@@ -93,6 +104,7 @@ function App() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-6">
+        {activeTab === 'dashboard' && <Dashboard />}
         {activeTab === 'fleet' && <FleetList />}
         {activeTab === 'crew' && <CrewList />}
         {activeTab === 'trips' && <TripLogs />}
