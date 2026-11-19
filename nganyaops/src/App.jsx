@@ -4,6 +4,7 @@ import LandingPage from './components/LandingPage'
 import Auth from './components/Auth'
 import FleetList from './components/FleetList'
 import CrewList from './components/CrewList'
+import TripLogs from './components/TripLogs'
 
 function App() {
   const [session, setSession] = useState(null)
@@ -58,6 +59,16 @@ function App() {
               >
                 Crew
               </button>
+              <button
+                onClick={() => setActiveTab('trips')}
+                className={`px-3 py-1 text-sm font-medium ${
+                  activeTab === 'trips'
+                    ? 'bg-gray-900 text-white'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                Trips
+              </button>
             </nav>
           </div>
 
@@ -71,7 +82,9 @@ function App() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-6">
-        {activeTab === 'fleet' ? <FleetList /> : <CrewList />}
+        {activeTab === 'fleet' && <FleetList />}
+        {activeTab === 'crew' && <CrewList />}
+        {activeTab === 'trips' && <TripLogs />}
       </main>
     </div>
   )
