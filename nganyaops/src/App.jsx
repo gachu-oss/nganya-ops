@@ -28,44 +28,47 @@ function AppLayout({ children }) {
   return (
     <div className="min-h-screen bg-gray-100 text-gray-900">
       <header className="bg-white border-b border-gray-300">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-6">
-            <div>
+        <div className="max-w-6xl mx-auto px-4 py-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-center justify-between gap-3 lg:contents">
+            <div className="flex items-baseline shrink-0">
               <span className="font-bold text-lg tracking-tight">NganyaOps</span>
               <span className="ml-2 text-xs text-gray-500">Fleet Ops</span>
             </div>
-            <nav className="flex flex-wrap gap-1.5">
-              {navItems.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  className={({ isActive }) =>
-                    `px-3 py-1.5 text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'bg-gray-900 text-white'
-                        : 'text-gray-700 hover:bg-gray-100'
-                    }`
-                  }
-                >
-                  {item.label}
-                </NavLink>
-              ))}
-            </nav>
+
+            <div className="flex items-center gap-3 lg:order-3">
+              <span className="text-xs text-gray-500 hidden sm:inline truncate max-w-[180px]">
+                {user?.email}
+              </span>
+              <button
+                onClick={signOut}
+                className="text-xs text-gray-700 hover:text-gray-900 underline py-1 px-1 whitespace-nowrap"
+              >
+                Log Out
+              </button>
+            </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <span className="text-xs text-gray-500 hidden sm:inline">{user?.email}</span>
-            <button
-              onClick={signOut}
-              className="text-xs text-gray-700 hover:text-gray-900 underline"
-            >
-              Log Out
-            </button>
-          </div>
+          <nav className="flex items-center gap-1.5 overflow-x-auto pb-0.5 lg:pb-0 lg:order-2">
+            {navItems.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  `px-3 py-2 sm:py-1.5 text-sm font-medium whitespace-nowrap shrink-0 transition-colors ${
+                    isActive
+                      ? 'bg-gray-900 text-white'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`
+                }
+              >
+                {item.label}
+              </NavLink>
+            ))}
+          </nav>
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-6">{children}</main>
+      <main className="max-w-6xl mx-auto px-4 py-4 sm:py-6">{children}</main>
     </div>
   )
 }

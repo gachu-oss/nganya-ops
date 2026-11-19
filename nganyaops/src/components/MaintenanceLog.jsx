@@ -90,11 +90,11 @@ function MaintenanceLog() {
     <div className="space-y-6">
       <form onSubmit={handleAddRecord} className="bg-white p-4 border border-gray-300">
         <h2 className="font-bold text-gray-900 mb-3">Log Garage / Maintenance Expense</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <select
             value={plateNumber}
             onChange={(e) => setPlateNumber(e.target.value)}
-            className="border border-gray-300 px-3 py-2 text-sm bg-white"
+            className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm bg-white"
             required
           >
             {vehicles.length === 0 ? (
@@ -111,7 +111,7 @@ function MaintenanceLog() {
             type="date"
             value={serviceDate}
             onChange={(e) => setServiceDate(e.target.value)}
-            className="border border-gray-300 px-3 py-2 text-sm"
+            className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm"
             required
           />
           <input
@@ -119,7 +119,7 @@ function MaintenanceLog() {
             placeholder="Issue / Work Done (e.g. Brake pads)"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="border border-gray-300 px-3 py-2 text-sm"
+            className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm"
             required
           />
           <input
@@ -128,20 +128,20 @@ function MaintenanceLog() {
             placeholder="Repair Cost (KES)"
             value={cost}
             onChange={(e) => setCost(e.target.value)}
-            className="border border-gray-300 px-3 py-2 text-sm"
+            className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm"
             required
           />
         </div>
         <button
           type="submit"
           disabled={vehicles.length === 0}
-          className="mt-3 bg-gray-900 text-white px-4 py-2 text-sm font-medium hover:bg-gray-800 disabled:opacity-50"
+          className="w-full sm:w-auto mt-3 bg-gray-900 text-white px-4 py-2.5 sm:py-2 text-sm font-medium hover:bg-gray-800 disabled:opacity-50"
         >
           Save Maintenance Log
         </button>
       </form>
 
-      <div className="bg-white p-3 border border-gray-300 flex justify-between items-center text-sm">
+      <div className="bg-white p-3 border border-gray-300 flex flex-wrap justify-between items-center gap-2 text-sm">
         <span className="font-medium text-gray-700">Total Logged Garage Spend</span>
         <span className="font-mono font-bold text-gray-900">
           KES {totalCost.toLocaleString()}
@@ -149,15 +149,15 @@ function MaintenanceLog() {
       </div>
 
       <div className="bg-white border border-gray-300 overflow-x-auto">
-        <table className="w-full text-left border-collapse text-sm">
+        <table className="w-full text-left border-collapse text-sm responsive-table">
           <thead>
             <tr className="border-b border-gray-300 bg-gray-50">
-              <th className="p-3 font-semibold">Date</th>
-              <th className="p-3 font-semibold">Matatu</th>
-              <th className="p-3 font-semibold">Work / Issue</th>
-              <th className="p-3 font-semibold">Cost</th>
-              <th className="p-3 font-semibold">Status</th>
-              <th className="p-3 font-semibold">Actions</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Date</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Matatu</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Work / Issue</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Cost</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Status</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -170,11 +170,19 @@ function MaintenanceLog() {
             ) : (
               records.map((rec) => (
                 <tr key={rec.id} className="border-b border-gray-200">
-                  <td className="p-3 font-mono">{rec.service_date}</td>
-                  <td className="p-3 font-mono font-semibold">{rec.plate_number}</td>
-                  <td className="p-3">{rec.description}</td>
-                  <td className="p-3 font-mono">KES {Number(rec.cost).toLocaleString()}</td>
-                  <td className="p-3">
+                  <td data-label="Date" className="p-3 font-mono md:whitespace-nowrap">
+                    {rec.service_date}
+                  </td>
+                  <td data-label="Matatu" className="p-3 font-mono font-semibold md:whitespace-nowrap">
+                    {rec.plate_number}
+                  </td>
+                  <td data-label="Work / Issue" className="p-3">
+                    {rec.description}
+                  </td>
+                  <td data-label="Cost" className="p-3 font-mono md:whitespace-nowrap">
+                    KES {Number(rec.cost).toLocaleString()}
+                  </td>
+                  <td data-label="Status" className="p-3 md:whitespace-nowrap">
                     <span
                       className={`text-xs font-semibold px-2 py-0.5 ${
                         rec.status === 'Completed'
@@ -185,21 +193,23 @@ function MaintenanceLog() {
                       {rec.status}
                     </span>
                   </td>
-                  <td className="p-3 space-x-3">
-                    <button
-                      type="button"
-                      onClick={() => toggleStatus(rec)}
-                      className="text-xs underline text-gray-700 hover:text-gray-900"
-                    >
-                      Mark {rec.status === 'Pending' ? 'Completed' : 'Pending'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteRecord(rec.id, rec.plate_number)}
-                      className="text-xs underline text-red-600 hover:text-red-800"
-                    >
-                      Delete
-                    </button>
+                  <td data-label="Actions" className="p-3 md:whitespace-nowrap">
+                    <div className="flex items-center justify-end md:justify-start gap-3">
+                      <button
+                        type="button"
+                        onClick={() => toggleStatus(rec)}
+                        className="text-xs underline text-gray-700 hover:text-gray-900 py-1"
+                      >
+                        Mark {rec.status === 'Pending' ? 'Completed' : 'Pending'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteRecord(rec.id, rec.plate_number)}
+                        className="text-xs underline text-red-600 hover:text-red-800 py-1"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
