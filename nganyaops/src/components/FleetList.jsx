@@ -1,5 +1,13 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
+import { getExpiryStatus } from '../utils/compliance'
+
+function badgeClasses(tone) {
+  if (tone === 'danger') return 'bg-red-100 text-red-800'
+  if (tone === 'warning') return 'bg-amber-100 text-amber-800'
+  if (tone === 'valid') return 'bg-green-100 text-green-800'
+  return 'bg-gray-100 text-gray-600'
+}
 
 function FleetList() {
   const [vehicles, setVehicles] = useState([])
@@ -8,6 +16,8 @@ function FleetList() {
   const [nickname, setNickname] = useState('')
   const [route, setRoute] = useState('')
   const [dailyTarget, setDailyTarget] = useState('')
+  const [insuranceExpiry, setInsuranceExpiry] = useState('')
+  const [ntsaExpiry, setNtsaExpiry] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('All')
 
@@ -52,23 +62,31 @@ function FleetList() {
     e.preventDefault()
     if (!plateNumber || !route || !dailyTarget) return
 
-    const { error } = await supabase.from('vehicles').insert([
-      {
-        plate_number: plateNumber.toUpperCase(),
-        nickname: nickname || '-',
-        route,
-        daily_target: Number(dailyTarget),
-        status: 'Active',
-      },
-    ])
-
-    if (!error) {
-      setPlateNumber('')
-      setNickname('')
-      setRoute('')
-      setDailyTarget('')
-      fetchVehicles()
+    const newVehicle = {
+      plate_number: plateNumber.toUpperCase(),
+      nickname: nickname || '-',
+      route,
+      daily_target: Number(dailyTarget),
+      status: 'Active',
     }
+
+    if (insuranceExpiry) newVehicle.insurance_expiry = insuranceExpiry
+    if (ntsaExpiry) newVehicle.ntsa_inspection_expiry = ntsaExpiry
+
+    const { error } = await supabase.from('vehicles').insert([newVehicle])
+
+    if (error) {
+      alert('Error saving vehicle: ' + error.message)
+      return
+    }
+
+    setPlateNumber('')
+    setNickname('')
+    setRoute('')
+    setDailyTarget('')
+    setInsuranceExpiry('')
+    setNtsaExpiry('')
+    fetchVehicles()
   }
 
   async function toggleStatus(vehicle) {
@@ -142,6 +160,34 @@ function FleetList() {
             required
           />
         </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+          <div>
+            <label htmlFor="insurance-expiry" className="block text-xs text-gray-600 mb-1">
+              Insurance Expiry Date (Optional)
+            </label>
+            <input
+              id="insurance-expiry"
+              type="date"
+              value={insuranceExpiry}
+              onChange={(e) => setInsuranceExpiry(e.target.value)}
+              className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm bg-white"
+            />
+          </div>
+          <div>
+            <label htmlFor="ntsa-expiry" className="block text-xs text-gray-600 mb-1">
+              NTSA Inspection Expiry Date (Optional)
+            </label>
+            <input
+              id="ntsa-expiry"
+              type="date"
+              value={ntsaExpiry}
+              onChange={(e) => setNtsaExpiry(e.target.value)}
+              className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm bg-white"
+            />
+          </div>
+        </div>
+
         <button
           type="submit"
           className="w-full sm:w-auto mt-3 bg-gray-900 text-white px-4 py-2.5 sm:py-2 text-sm font-medium hover:bg-gray-800"
@@ -177,6 +223,7 @@ function FleetList() {
               <th className="p-3 font-semibold whitespace-nowrap">Nickname</th>
               <th className="p-3 font-semibold whitespace-nowrap">Route</th>
               <th className="p-3 font-semibold whitespace-nowrap">Daily Target</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Compliance</th>
               <th className="p-3 font-semibold whitespace-nowrap">Today&apos;s Target Check</th>
               <th className="p-3 font-semibold whitespace-nowrap">Status</th>
               <th className="p-3 font-semibold whitespace-nowrap">Actions</th>
@@ -185,7 +232,7 @@ function FleetList() {
           <tbody>
             {filteredVehicles.length === 0 ? (
               <tr>
-                <td colSpan="7" className="p-4 text-gray-500 text-center">
+                <td colSpan="8" className="p-4 text-gray-500 text-center">
                   No matching vehicles found.
                 </td>
               </tr>
@@ -198,6 +245,8 @@ function FleetList() {
                 const todayNet = todayNetByPlate[v.plate_number] || 0
                 const target = Number(v.daily_target || 0)
                 const hitTarget = todayNet >= target
+                const insStatus = getExpiryStatus(v.insurance_expiry)
+                const ntsaStatus = getExpiryStatus(v.ntsa_inspection_expiry)
 
                 return (
                   <tr key={v.id} className="border-b border-gray-200">
@@ -212,6 +261,16 @@ function FleetList() {
                     </td>
                     <td data-label="Daily Target" className="p-3 font-mono md:whitespace-nowrap">
                       KES {target.toLocaleString()}
+                    </td>
+                    <td data-label="Compliance" className="p-3">
+                      <div className="flex flex-col gap-1">
+                        <span className={`text-xs font-semibold px-2 py-0.5 w-fit ${badgeClasses(insStatus.tone)}`}>
+                          Ins: {insStatus.label}
+                        </span>
+                        <span className={`text-xs font-semibold px-2 py-0.5 w-fit ${badgeClasses(ntsaStatus.tone)}`}>
+                          NTSA: {ntsaStatus.label}
+                        </span>
+                      </div>
                     </td>
                     <td data-label="Today's Target" className="p-3 md:whitespace-nowrap">
                       {!hasLogsToday ? (

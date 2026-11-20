@@ -347,7 +347,17 @@
 <a name='L282'></a><a href='#L282'>282</a>
 <a name='L283'></a><a href='#L283'>283</a>
 <a name='L284'></a><a href='#L284'>284</a>
-<a name='L285'></a><a href='#L285'>285</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L285'></a><a href='#L285'>285</a>
+<a name='L286'></a><a href='#L286'>286</a>
+<a name='L287'></a><a href='#L287'>287</a>
+<a name='L288'></a><a href='#L288'>288</a>
+<a name='L289'></a><a href='#L289'>289</a>
+<a name='L290'></a><a href='#L290'>290</a>
+<a name='L291'></a><a href='#L291'>291</a>
+<a name='L292'></a><a href='#L292'>292</a>
+<a name='L293'></a><a href='#L293'>293</a>
+<a name='L294'></a><a href='#L294'>294</a>
+<a name='L295'></a><a href='#L295'>295</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -590,6 +600,16 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -729,11 +749,11 @@ function TripLogs() {
     &lt;div className="space-y-6"&gt;
       &lt;form onSubmit={handleAddLog} className="bg-white p-4 border border-gray-300"&gt;
         &lt;h2 className="font-bold text-gray-900 mb-3"&gt;Log Daily Trip, Revenue &amp; Expenses&lt;/h2&gt;
-        &lt;div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-3"&gt;
+        &lt;div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3"&gt;
           &lt;select
             value={plateNumber}
 <span class="fstat-no" title="function not covered" >            onChange={(e</span>) =&gt; <span class="cstat-no" title="statement not covered" >setPlateNumber(e.target.value)}</span>
-            className="border border-gray-300 px-3 py-2 text-sm bg-white"
+            className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm bg-white"
             required
           &gt;
             {vehicles.length === 0 ? (
@@ -750,7 +770,7 @@ function TripLogs() {
             type="date"
             value={tripDate}
 <span class="fstat-no" title="function not covered" >            onChange={(e</span>) =&gt; <span class="cstat-no" title="statement not covered" >setTripDate(e.target.value)}</span>
-            className="border border-gray-300 px-3 py-2 text-sm"
+            className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm"
             required
           /&gt;
           &lt;input
@@ -759,7 +779,7 @@ function TripLogs() {
             placeholder="Trips Completed (e.g. 6)"
             value={tripsCount}
 <span class="fstat-no" title="function not covered" >            onChange={(e</span>) =&gt; <span class="cstat-no" title="statement not covered" >setTripsCount(e.target.value)}</span>
-            className="border border-gray-300 px-3 py-2 text-sm"
+            className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm"
             required
           /&gt;
           &lt;input
@@ -768,19 +788,19 @@ function TripLogs() {
             placeholder="Gross Collection (KES)"
             value={grossRevenue}
 <span class="fstat-no" title="function not covered" >            onChange={(e</span>) =&gt; <span class="cstat-no" title="statement not covered" >setGrossRevenue(e.target.value)}</span>
-            className="border border-gray-300 px-3 py-2 text-sm"
+            className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm"
             required
           /&gt;
         &lt;/div&gt;
 &nbsp;
-        &lt;div className="grid grid-cols-1 sm:grid-cols-3 gap-3"&gt;
+        &lt;div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"&gt;
           &lt;input
             type="number"
             min="0"
             placeholder="Fuel Cost (KES)"
             value={fuelCost}
 <span class="fstat-no" title="function not covered" >            onChange={(e</span>) =&gt; <span class="cstat-no" title="statement not covered" >setFuelCost(e.target.value)}</span>
-            className="border border-gray-300 px-3 py-2 text-sm"
+            className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm"
           /&gt;
           &lt;input
             type="number"
@@ -788,7 +808,7 @@ function TripLogs() {
             placeholder="Crew Allowance (KES)"
             value={crewAllowance}
 <span class="fstat-no" title="function not covered" >            onChange={(e</span>) =&gt; <span class="cstat-no" title="statement not covered" >setCrewAllowance(e.target.value)}</span>
-            className="border border-gray-300 px-3 py-2 text-sm"
+            className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm"
           /&gt;
           &lt;input
             type="number"
@@ -796,25 +816,25 @@ function TripLogs() {
             placeholder="Stage / Other Expenses (KES)"
             value={otherExpenses}
 <span class="fstat-no" title="function not covered" >            onChange={(e</span>) =&gt; <span class="cstat-no" title="statement not covered" >setOtherExpenses(e.target.value)}</span>
-            className="border border-gray-300 px-3 py-2 text-sm"
+            className="w-full min-w-0 sm:col-span-2 md:col-span-1 border border-gray-300 px-3 py-2 text-base sm:text-sm"
           /&gt;
         &lt;/div&gt;
 &nbsp;
         &lt;button
           type="submit"
           disabled={vehicles.length === 0}
-          className="mt-3 bg-gray-900 text-white px-4 py-2 text-sm font-medium hover:bg-gray-800 disabled:opacity-50"
+          className="w-full sm:w-auto mt-3 bg-gray-900 text-white px-4 py-2.5 sm:py-2 text-sm font-medium hover:bg-gray-800 disabled:opacity-50"
         &gt;
           Save Shift Log
         &lt;/button&gt;
       &lt;/form&gt;
 &nbsp;
-      &lt;div className="bg-white p-3 border border-gray-300 flex flex-col sm:flex-row gap-3 items-center justify-between"&gt;
+      &lt;div className="bg-white p-3 border border-gray-300 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between"&gt;
         &lt;div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto"&gt;
           &lt;select
             value={filterPlate}
 <span class="fstat-no" title="function not covered" >            onChange={(e</span>) =&gt; <span class="cstat-no" title="statement not covered" >setFilterPlate(e.target.value)}</span>
-            className="border border-gray-300 px-3 py-2 text-sm bg-white"
+            className="w-full sm:w-auto border border-gray-300 px-3 py-2 text-base sm:text-sm bg-white"
           &gt;
             &lt;option value="All"&gt;All Matatus&lt;/option&gt;
             {loggedPlates.map((plate) =&gt; (
@@ -828,7 +848,7 @@ function TripLogs() {
             type="date"
             value={filterDate}
 <span class="fstat-no" title="function not covered" >            onChange={(e</span>) =&gt; <span class="cstat-no" title="statement not covered" >setFilterDate(e.target.value)}</span>
-            className="border border-gray-300 px-3 py-2 text-sm"
+            className="w-full sm:w-auto min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm"
           /&gt;
         &lt;/div&gt;
 &nbsp;
@@ -839,7 +859,7 @@ function TripLogs() {
 <span class="cstat-no" title="statement not covered" >              setFilterPlate('All')</span>
 <span class="cstat-no" title="statement not covered" >              setFilterDate('')</span>
             }}
-            className="text-xs underline text-gray-700 hover:text-gray-900"
+            className="self-start sm:self-auto text-xs underline text-gray-700 hover:text-gray-900 py-1"
           &gt;
             Clear Filters
           &lt;/button&gt;
@@ -847,17 +867,17 @@ function TripLogs() {
       &lt;/div&gt;
 &nbsp;
       &lt;div className="bg-white border border-gray-300 overflow-x-auto"&gt;
-        &lt;table className="w-full text-left border-collapse text-sm"&gt;
+        &lt;table className="w-full text-left border-collapse text-sm responsive-table"&gt;
           &lt;thead&gt;
             &lt;tr className="border-b border-gray-300 bg-gray-50"&gt;
-              &lt;th className="p-3 font-semibold"&gt;Date&lt;/th&gt;
-              &lt;th className="p-3 font-semibold"&gt;Matatu&lt;/th&gt;
-              &lt;th className="p-3 font-semibold"&gt;Trips&lt;/th&gt;
-              &lt;th className="p-3 font-semibold"&gt;Gross&lt;/th&gt;
-              &lt;th className="p-3 font-semibold"&gt;Fuel&lt;/th&gt;
-              &lt;th className="p-3 font-semibold"&gt;Crew &amp; Other&lt;/th&gt;
-              &lt;th className="p-3 font-semibold"&gt;Net Profit&lt;/th&gt;
-              &lt;th className="p-3 font-semibold"&gt;Actions&lt;/th&gt;
+              &lt;th className="p-3 font-semibold whitespace-nowrap"&gt;Date&lt;/th&gt;
+              &lt;th className="p-3 font-semibold whitespace-nowrap"&gt;Matatu&lt;/th&gt;
+              &lt;th className="p-3 font-semibold whitespace-nowrap"&gt;Trips&lt;/th&gt;
+              &lt;th className="p-3 font-semibold whitespace-nowrap"&gt;Gross&lt;/th&gt;
+              &lt;th className="p-3 font-semibold whitespace-nowrap"&gt;Fuel&lt;/th&gt;
+              &lt;th className="p-3 font-semibold whitespace-nowrap"&gt;Crew &amp; Other&lt;/th&gt;
+              &lt;th className="p-3 font-semibold whitespace-nowrap"&gt;Net Profit&lt;/th&gt;
+              &lt;th className="p-3 font-semibold whitespace-nowrap"&gt;Actions&lt;/th&gt;
             &lt;/tr&gt;
           &lt;/thead&gt;
           &lt;tbody&gt;
@@ -875,30 +895,40 @@ function TripLogs() {
 &nbsp;
                 return (
                   &lt;tr key={log.id} className="border-b border-gray-200"&gt;
-                    &lt;td className="p-3 font-mono"&gt;{log.trip_date}&lt;/td&gt;
-                    &lt;td className="p-3 font-mono font-semibold"&gt;{log.plate_number}&lt;/td&gt;
-                    &lt;td className="p-3"&gt;{log.trips_count}&lt;/td&gt;
-                    &lt;td className="p-3 font-mono"&gt;
+                    &lt;td data-label="Date" className="p-3 font-mono md:whitespace-nowrap"&gt;
+                      {log.trip_date}
+                    &lt;/td&gt;
+                    &lt;td data-label="Matatu" className="p-3 font-mono font-semibold md:whitespace-nowrap"&gt;
+                      {log.plate_number}
+                    &lt;/td&gt;
+                    &lt;td data-label="Trips" className="p-3 md:whitespace-nowrap"&gt;
+                      {log.trips_count}
+                    &lt;/td&gt;
+                    &lt;td data-label="Gross" className="p-3 font-mono md:whitespace-nowrap"&gt;
                       KES {Number(log.gross_revenue).toLocaleString()}
                     &lt;/td&gt;
-                    &lt;td className="p-3 font-mono text-gray-700"&gt;
+                    &lt;td data-label="Fuel" className="p-3 font-mono text-gray-700 md:whitespace-nowrap"&gt;
                       KES {fuel.toLocaleString()}
                     &lt;/td&gt;
-                    &lt;td className="p-3 font-mono text-gray-700"&gt;
+                    &lt;td
+                      data-label="Crew &amp; Other"
+                      className="p-3 font-mono text-gray-700 md:whitespace-nowrap"
+                    &gt;
                       KES {otherTotal.toLocaleString()}
                     &lt;/td&gt;
                     &lt;td
-                      className={`p-3 font-mono font-semibold ${
+                      data-label="Net Profit"
+                      className={`p-3 font-mono font-semibold md:whitespace-nowrap ${
                         net &gt;= 0 ? 'text-green-700' : <span class="branch-1 cbranch-no" title="branch not covered" >'text-red-600'</span>
                       }`}
                     &gt;
                       KES {net.toLocaleString()}
                     &lt;/td&gt;
-                    &lt;td className="p-3"&gt;
+                    &lt;td data-label="Actions" className="p-3 md:whitespace-nowrap"&gt;
                       &lt;button
                         type="button"
 <span class="fstat-no" title="function not covered" >                        onClick={() =&gt; <span class="cstat-no" title="statement not covered" >h</span>andleDeleteLog(log.id, log.plate_number, log.trip_date)}</span>
-                        className="text-xs underline text-red-600 hover:text-red-800"
+                        className="text-xs underline text-red-600 hover:text-red-800 py-1"
                       &gt;
                         Delete
                       &lt;/button&gt;
@@ -922,7 +952,7 @@ export default TripLogs
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-11-19T20:20:10.595Z
+                at 2026-11-20T10:06:00.551Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

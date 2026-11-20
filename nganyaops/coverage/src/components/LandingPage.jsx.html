@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>1/1</span>
+                <span class='fraction'>3/3</span>
             </div>
         
             
@@ -39,14 +39,14 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>1/1</span>
+                <span class='fraction'>2/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>1/1</span>
+                <span class='fraction'>3/3</span>
             </div>
         
             
@@ -124,7 +124,36 @@
 <a name='L59'></a><a href='#L59'>59</a>
 <a name='L60'></a><a href='#L60'>60</a>
 <a name='L61'></a><a href='#L61'>61</a>
-<a name='L62'></a><a href='#L62'>62</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a>
+<a name='L79'></a><a href='#L79'>79</a>
+<a name='L80'></a><a href='#L80'>80</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -171,6 +200,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -185,16 +215,33 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">export default function LandingPage({ onEnterApp }) {
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import matwanaBg from '../assets/matwana-bg.png'
+import matatuChronicles from '../assets/matatu-chronicles.jpg'
+import matatuMoxie from '../assets/matatu-moxie.jpg'
+import matatuStreet from '../assets/matatu-street.jpg'
+&nbsp;
+const showcaseImages = [
+  { src: matatuChronicles, alt: 'Matatu Chronicles custom front exterior' },
+  { src: matatuMoxie, alt: 'Moxie matatu illustration KDS 899V' },
+  { src: matatuStreet, alt: 'Nganya matatu at city stage' },
+]
+&nbsp;
+export default function LandingPage({ onEnterApp }) {
   return (
     &lt;div className="min-h-screen bg-gray-100 text-gray-900 flex flex-col"&gt;
       {/* Top Navbar */}
       &lt;header className="bg-white border-b border-gray-300"&gt;
-        &lt;div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between"&gt;
+        &lt;div className="max-w-6xl mx-auto px-4 py-3 sm:py-4 flex items-center justify-between gap-3"&gt;
           &lt;span className="font-bold text-lg tracking-tight"&gt;NganyaOps&lt;/span&gt;
           &lt;button
             onClick={onEnterApp}
-            className="bg-gray-900 text-white px-4 py-2 text-sm font-medium hover:bg-gray-800"
+            className="bg-gray-900 text-white px-4 py-2 text-sm font-medium whitespace-nowrap shrink-0 hover:bg-gray-800"
           &gt;
             Login / Sign Up
           &lt;/button&gt;
@@ -202,41 +249,48 @@
       &lt;/header&gt;
 &nbsp;
       {/* Main Content */}
-      &lt;main className="max-w-5xl mx-auto px-4 py-12 flex-1"&gt;
-        {/* Brief System Description */}
-        &lt;div className="max-w-2xl mb-10"&gt;
-          &lt;h1 className="text-3xl font-bold mb-3"&gt;
-            Simple Fleet &amp;amp; Daily Operations Tracking for Matatus
-          &lt;/h1&gt;
-          &lt;p className="text-gray-700 leading-relaxed mb-6"&gt;
-            NganyaOps replaces paper tally books with a straightforward digital ledger. 
-            Keep track of your active fleet, log daily trip counts, monitor cash collections 
-            against fuel costs, and see which vehicles hit their daily targets in real time.
-          &lt;/p&gt;
-          &lt;button
-            onClick={onEnterApp}
-            className="bg-gray-900 text-white px-5 py-2.5 text-sm font-medium hover:bg-gray-800"
-          &gt;
-            Get Started
-          &lt;/button&gt;
-        &lt;/div&gt;
+      &lt;main className="flex-1"&gt;
+        &lt;div className="max-w-6xl mx-auto px-4 py-8 sm:py-12"&gt;
+          {/* Hero Section with Unobstructed Matwana Watermark */}
+          &lt;section className="relative overflow-hidden mb-8 sm:mb-10 py-2 flex flex-col md:flex-row md:items-center md:justify-between gap-6"&gt;
+            &lt;div className="relative z-10 max-w-xl"&gt;
+              &lt;h1 className="text-2xl sm:text-3xl font-bold mb-3"&gt;
+                Simple Fleet &amp;amp; Daily Operations Tracking for Matatus
+              &lt;/h1&gt;
+              &lt;p className="text-gray-700 leading-relaxed"&gt;
+                NganyaOps replaces paper tally books with a straightforward digital ledger. 
+                Keep track of your active fleet, log daily trip counts, monitor cash collections 
+                against fuel costs, and see which vehicles hit their daily targets in real time.
+              &lt;/p&gt;
+            &lt;/div&gt;
 &nbsp;
-        {/* 3 Image Placeholders */}
-        &lt;div className="grid grid-cols-1 md:grid-cols-3 gap-4"&gt;
-          &lt;div className="bg-white border-2 border-dashed border-gray-300 h-56 flex flex-col items-center justify-center p-4 text-center"&gt;
-            &lt;span className="text-sm font-semibold text-gray-600"&gt;Image Placeholder 1&lt;/span&gt;
-            &lt;span className="text-xs text-gray-400 mt-1"&gt;e.g., Fleet / Matatu exterior&lt;/span&gt;
-          &lt;/div&gt;
+            &lt;div
+              aria-hidden="true"
+              className="pointer-events-none select-none absolute inset-0 flex items-center justify-center md:static md:flex-1 md:justify-end"
+            &gt;
+              &lt;img
+                src={matwanaBg}
+                alt=""
+                className="w-full max-w-xs sm:max-w-sm opacity-15 md:opacity-20 object-contain"
+              /&gt;
+            &lt;/div&gt;
+          &lt;/section&gt;
 &nbsp;
-          &lt;div className="bg-white border-2 border-dashed border-gray-300 h-56 flex flex-col items-center justify-center p-4 text-center"&gt;
-            &lt;span className="text-sm font-semibold text-gray-600"&gt;Image Placeholder 2&lt;/span&gt;
-            &lt;span className="text-xs text-gray-400 mt-1"&gt;e.g., Route / Stage operations&lt;/span&gt;
-          &lt;/div&gt;
-&nbsp;
-          &lt;div className="bg-white border-2 border-dashed border-gray-300 h-56 flex flex-col items-center justify-center p-4 text-center"&gt;
-            &lt;span className="text-sm font-semibold text-gray-600"&gt;Image Placeholder 3&lt;/span&gt;
-            &lt;span className="text-xs text-gray-400 mt-1"&gt;e.g., Daily collection ledger&lt;/span&gt;
-          &lt;/div&gt;
+          {/* 3 Fleet Showcase Images */}
+          &lt;section className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5"&gt;
+            {showcaseImages.map((image) =&gt; (
+              &lt;div
+                key={image.alt}
+                className="bg-white border border-gray-300 overflow-hidden aspect-[3/4] w-full max-w-sm mx-auto sm:max-w-none"
+              &gt;
+                &lt;img
+                  src={image.src}
+                  alt={image.alt}
+                  className="w-full h-full object-cover object-center"
+                /&gt;
+              &lt;/div&gt;
+            ))}
+          &lt;/section&gt;
         &lt;/div&gt;
       &lt;/main&gt;
 &nbsp;
@@ -253,7 +307,7 @@
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-11-19T20:20:10.595Z
+                at 2026-11-20T10:06:00.551Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
