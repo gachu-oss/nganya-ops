@@ -106,7 +106,7 @@ describe('Fleet and Operations Components', () => {
       expect(screen.getByText(/Target Hit/)).toBeInTheDocument()
     })
 
-    fireEvent.change(screen.getByPlaceholderText('Search by plate, nickname, or route...'), {
+    fireEvent.change(screen.getByPlaceholderText('Search by plate, nickname, manufacturer, or route...'), {
       target: { value: 'Kikuyu' },
     })
 
