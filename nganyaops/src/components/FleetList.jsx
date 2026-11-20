@@ -14,6 +14,8 @@ function FleetList() {
   const [todayNetByPlate, setTodayNetByPlate] = useState({})
   const [plateNumber, setPlateNumber] = useState('')
   const [nickname, setNickname] = useState('')
+  const [manufacturer, setManufacturer] = useState('')
+  const [seatCount, setSeatCount] = useState('14')
   const [route, setRoute] = useState('')
   const [dailyTarget, setDailyTarget] = useState('')
   const [insuranceExpiry, setInsuranceExpiry] = useState('')
@@ -65,6 +67,8 @@ function FleetList() {
     const newVehicle = {
       plate_number: plateNumber.toUpperCase(),
       nickname: nickname || '-',
+      manufacturer: manufacturer || '-',
+      seat_count: Number(seatCount),
       route,
       daily_target: Number(dailyTarget),
       status: 'Active',
@@ -82,6 +86,8 @@ function FleetList() {
 
     setPlateNumber('')
     setNickname('')
+    setManufacturer('')
+    setSeatCount('14')
     setRoute('')
     setDailyTarget('')
     setInsuranceExpiry('')
@@ -118,6 +124,7 @@ function FleetList() {
     const matchesSearch =
       v.plate_number.toLowerCase().includes(query) ||
       v.nickname.toLowerCase().includes(query) ||
+      (v.manufacturer || '').toLowerCase().includes(query) ||
       v.route.toLowerCase().includes(query)
 
     return matchesStatus && matchesSearch
@@ -127,7 +134,7 @@ function FleetList() {
     <div className="space-y-6">
       <form onSubmit={handleAddVehicle} className="bg-white p-4 border border-gray-300">
         <h2 className="font-bold text-gray-900 mb-3">Add Matatu to Fleet</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <input
             type="text"
             placeholder="Plate (e.g. KDG 412X)"
@@ -143,6 +150,22 @@ function FleetList() {
             onChange={(e) => setNickname(e.target.value)}
             className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm"
           />
+          <input
+            type="text"
+            placeholder="Manufacturer / Model (e.g. Isuzu NQR)"
+            value={manufacturer}
+            onChange={(e) => setManufacturer(e.target.value)}
+            className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm"
+          />
+          <select
+            aria-label="Seat Capacity"
+            value={seatCount}
+            onChange={(e) => setSeatCount(e.target.value)}
+            className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm bg-white"
+          >
+            <option value="14">14-Seater (Nissan / Van)</option>
+            <option value="33">33-Seater (Minibus / Manyanga)</option>
+          </select>
           <input
             type="text"
             placeholder="Route (e.g. CBD - Kikuyu)"
@@ -199,7 +222,7 @@ function FleetList() {
       <div className="bg-white p-3 border border-gray-300 flex flex-col sm:flex-row gap-3 justify-between">
         <input
           type="text"
-          placeholder="Search by plate, nickname, or route..."
+          placeholder="Search by plate, nickname, manufacturer, or route..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm sm:flex-1"
@@ -221,6 +244,7 @@ function FleetList() {
             <tr className="border-b border-gray-300 bg-gray-50">
               <th className="p-3 font-semibold whitespace-nowrap">Plate</th>
               <th className="p-3 font-semibold whitespace-nowrap">Nickname</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Make & Seats</th>
               <th className="p-3 font-semibold whitespace-nowrap">Route</th>
               <th className="p-3 font-semibold whitespace-nowrap">Daily Target</th>
               <th className="p-3 font-semibold whitespace-nowrap">Compliance</th>
@@ -232,7 +256,7 @@ function FleetList() {
           <tbody>
             {filteredVehicles.length === 0 ? (
               <tr>
-                <td colSpan="8" className="p-4 text-gray-500 text-center">
+                <td colSpan="9" className="p-4 text-gray-500 text-center">
                   No matching vehicles found.
                 </td>
               </tr>
@@ -255,6 +279,12 @@ function FleetList() {
                     </td>
                     <td data-label="Nickname" className="p-3">
                       {v.nickname}
+                    </td>
+                    <td data-label="Make & Seats" className="p-3 md:whitespace-nowrap">
+                      <div>{v.manufacturer || '-'}</div>
+                      {v.seat_count && (
+                        <div className="text-xs text-gray-600">{v.seat_count}-seater</div>
+                      )}
                     </td>
                     <td data-label="Route" className="p-3">
                       {v.route}
