@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
+import { getExpiryStatus } from '../utils/compliance'
 
 function Dashboard() {
   const [loading, setLoading] = useState(true)
@@ -13,6 +14,7 @@ function Dashboard() {
     netProfit: 0,
   })
   const [rankings, setRankings] = useState([])
+  const [complianceAlerts, setComplianceAlerts] = useState([])
 
   useEffect(() => {
     loadSummary()
@@ -23,7 +25,9 @@ function Dashboard() {
     setErrorMsg('')
 
     const [vehiclesRes, tripsRes, maintRes] = await Promise.all([
-      supabase.from('vehicles').select('plate_number, nickname, route, status'),
+      supabase
+        .from('vehicles')
+        .select('plate_number, nickname, route, status, insurance_expiry, ntsa_inspection_expiry'),
       supabase
         .from('trip_logs')
         .select('plate_number, trips_count, gross_revenue, fuel_cost, crew_allowance, other_expenses'),
@@ -39,6 +43,29 @@ function Dashboard() {
     const vehicles = vehiclesRes.data || []
     const trips = tripsRes.data || []
     const maintenance = maintRes.data || []
+
+    const alerts = []
+    vehicles.forEach((v) => {
+      const ins = getExpiryStatus(v.insurance_expiry)
+      if (ins.tone === 'danger' || ins.tone === 'warning') {
+        alerts.push({
+          id: `${v.plate_number}-ins`,
+          plate: v.plate_number,
+          docType: 'Insurance',
+          status: ins,
+        })
+      }
+      const ntsa = getExpiryStatus(v.ntsa_inspection_expiry)
+      if (ntsa.tone === 'danger' || ntsa.tone === 'warning') {
+        alerts.push({
+          id: `${v.plate_number}-ntsa`,
+          plate: v.plate_number,
+          docType: 'NTSA Inspection',
+          status: ntsa,
+        })
+      }
+    })
+    setComplianceAlerts(alerts)
 
     const activeVehicles = vehicles.filter((v) => v.status === 'Active').length
     const garageVehicles = vehicles.filter((v) => v.status === 'Garage').length
@@ -114,6 +141,28 @@ function Dashboard() {
       {errorMsg && (
         <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 text-sm">
           {errorMsg}
+        </div>
+      )}
+
+      {!loading && complianceAlerts.length > 0 && (
+        <div className="bg-amber-50 border border-amber-300 p-4 space-y-2">
+          <h2 className="text-sm font-bold text-amber-900">
+            Compliance & Renewal Alerts ({complianceAlerts.length})
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            {complianceAlerts.map((item) => (
+              <span
+                key={item.id}
+                className={`text-xs font-semibold px-2.5 py-1 ${
+                  item.status.tone === 'danger'
+                    ? 'bg-red-100 text-red-800 border border-red-300'
+                    : 'bg-amber-100 text-amber-900 border border-amber-300'
+                }`}
+              >
+                {item.plate} — {item.docType}: {item.status.label}
+              </span>
+            ))}
+          </div>
         </div>
       )}
 

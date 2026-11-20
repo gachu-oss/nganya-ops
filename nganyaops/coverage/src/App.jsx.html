@@ -205,7 +205,10 @@
 <a name='L140'></a><a href='#L140'>140</a>
 <a name='L141'></a><a href='#L141'>141</a>
 <a name='L142'></a><a href='#L142'>142</a>
-<a name='L143'></a><a href='#L143'>143</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L143'></a><a href='#L143'>143</a>
+<a name='L144'></a><a href='#L144'>144</a>
+<a name='L145'></a><a href='#L145'>145</a>
+<a name='L146'></a><a href='#L146'>146</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -243,7 +246,17 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">25x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -251,14 +264,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">25x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -377,44 +383,47 @@ function AppLayout({ children }) {
   return (
     &lt;div className="min-h-screen bg-gray-100 text-gray-900"&gt;
       &lt;header className="bg-white border-b border-gray-300"&gt;
-        &lt;div className="max-w-5xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3"&gt;
-          &lt;div className="flex flex-wrap items-center gap-6"&gt;
-            &lt;div&gt;
+        &lt;div className="max-w-6xl mx-auto px-4 py-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between"&gt;
+          &lt;div className="flex items-center justify-between gap-3 lg:contents"&gt;
+            &lt;div className="flex items-baseline shrink-0"&gt;
               &lt;span className="font-bold text-lg tracking-tight"&gt;NganyaOps&lt;/span&gt;
               &lt;span className="ml-2 text-xs text-gray-500"&gt;Fleet Ops&lt;/span&gt;
             &lt;/div&gt;
-            &lt;nav className="flex flex-wrap gap-1.5"&gt;
-              {navItems.map((item) =&gt; (
-                &lt;NavLink
-                  key={item.to}
-                  to={item.to}
-                  className={({ isActive }) =&gt;
-                    `px-3 py-1.5 text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'bg-gray-900 text-white'
-                        : 'text-gray-700 hover:bg-gray-100'
-                    }`
-                  }
-                &gt;
-                  {item.label}
-                &lt;/NavLink&gt;
-              ))}
-            &lt;/nav&gt;
+&nbsp;
+            &lt;div className="flex items-center gap-3 lg:order-3"&gt;
+              &lt;span className="text-xs text-gray-500 hidden sm:inline truncate max-w-[180px]"&gt;
+                {user?.email}
+              &lt;/span&gt;
+              &lt;button
+                onClick={signOut}
+                className="text-xs text-gray-700 hover:text-gray-900 underline py-1 px-1 whitespace-nowrap"
+              &gt;
+                Log Out
+              &lt;/button&gt;
+            &lt;/div&gt;
           &lt;/div&gt;
 &nbsp;
-          &lt;div className="flex items-center gap-4"&gt;
-            &lt;span className="text-xs text-gray-500 hidden sm:inline"&gt;{user?.email}&lt;/span&gt;
-            &lt;button
-              onClick={signOut}
-              className="text-xs text-gray-700 hover:text-gray-900 underline"
-            &gt;
-              Log Out
-            &lt;/button&gt;
-          &lt;/div&gt;
+          &lt;nav className="flex items-center gap-1.5 overflow-x-auto pb-0.5 lg:pb-0 lg:order-2"&gt;
+            {navItems.map((item) =&gt; (
+              &lt;NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =&gt;
+                  `px-3 py-2 sm:py-1.5 text-sm font-medium whitespace-nowrap shrink-0 transition-colors ${
+                    isActive
+                      ? 'bg-gray-900 text-white'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`
+                }
+              &gt;
+                {item.label}
+              &lt;/NavLink&gt;
+            ))}
+          &lt;/nav&gt;
         &lt;/div&gt;
       &lt;/header&gt;
 &nbsp;
-      &lt;main className="max-w-5xl mx-auto px-4 py-6"&gt;{children}&lt;/main&gt;
+      &lt;main className="max-w-6xl mx-auto px-4 py-4 sm:py-6"&gt;{children}&lt;/main&gt;
     &lt;/div&gt;
   )
 }
@@ -496,7 +505,7 @@ export default App
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-11-19T20:20:10.595Z
+                at 2026-11-20T10:06:00.551Z
             </div>
         <script src="../prettify.js"></script>
         <script>

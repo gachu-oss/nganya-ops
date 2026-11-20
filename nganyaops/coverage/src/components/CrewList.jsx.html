@@ -245,7 +245,16 @@
 <a name='L180'></a><a href='#L180'>180</a>
 <a name='L181'></a><a href='#L181'>181</a>
 <a name='L182'></a><a href='#L182'>182</a>
-<a name='L183'></a><a href='#L183'>183</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L183'></a><a href='#L183'>183</a>
+<a name='L184'></a><a href='#L184'>184</a>
+<a name='L185'></a><a href='#L185'>185</a>
+<a name='L186'></a><a href='#L186'>186</a>
+<a name='L187'></a><a href='#L187'>187</a>
+<a name='L188'></a><a href='#L188'>188</a>
+<a name='L189'></a><a href='#L189'>189</a>
+<a name='L190'></a><a href='#L190'>190</a>
+<a name='L191'></a><a href='#L191'>191</a>
+<a name='L192'></a><a href='#L192'>192</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -393,6 +402,15 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -503,19 +521,19 @@ function CrewList() {
     &lt;div className="space-y-6"&gt;
       &lt;form onSubmit={handleAddCrew} className="bg-white p-4 border border-gray-300"&gt;
         &lt;h2 className="font-bold text-gray-900 mb-3"&gt;Register Crew Member&lt;/h2&gt;
-        &lt;div className="grid grid-cols-1 sm:grid-cols-4 gap-3"&gt;
+        &lt;div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"&gt;
           &lt;input
             type="text"
             placeholder="Full Name (e.g. Kamau Njoroge)"
             value={fullName}
 <span class="fstat-no" title="function not covered" >            onChange={(e</span>) =&gt; <span class="cstat-no" title="statement not covered" >setFullName(e.target.value)}</span>
-            className="border border-gray-300 px-3 py-2 text-sm"
+            className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm"
             required
           /&gt;
           &lt;select
             value={role}
 <span class="fstat-no" title="function not covered" >            onChange={(e</span>) =&gt; <span class="cstat-no" title="statement not covered" >setRole(e.target.value)}</span>
-            className="border border-gray-300 px-3 py-2 text-sm bg-white"
+            className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm bg-white"
           &gt;
             &lt;option value="Driver"&gt;Driver&lt;/option&gt;
             &lt;option value="Conductor"&gt;Conductor&lt;/option&gt;
@@ -525,13 +543,13 @@ function CrewList() {
             placeholder="Phone (e.g. 0712 345 678)"
             value={phone}
 <span class="fstat-no" title="function not covered" >            onChange={(e</span>) =&gt; <span class="cstat-no" title="statement not covered" >setPhone(e.target.value)}</span>
-            className="border border-gray-300 px-3 py-2 text-sm"
+            className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm"
             required
           /&gt;
           &lt;select
             value={assignedPlate}
 <span class="fstat-no" title="function not covered" >            onChange={(e</span>) =&gt; <span class="cstat-no" title="statement not covered" >setAssignedPlate(e.target.value)}</span>
-            className="border border-gray-300 px-3 py-2 text-sm bg-white"
+            className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm bg-white"
             required
           &gt;
             {vehicles.length === 0 ? (
@@ -548,21 +566,21 @@ function CrewList() {
         &lt;button
           type="submit"
           disabled={vehicles.length === 0}
-          className="mt-3 bg-gray-900 text-white px-4 py-2 text-sm font-medium hover:bg-gray-800 disabled:opacity-50"
+          className="w-full sm:w-auto mt-3 bg-gray-900 text-white px-4 py-2.5 sm:py-2 text-sm font-medium hover:bg-gray-800 disabled:opacity-50"
         &gt;
           Save Crew Member
         &lt;/button&gt;
       &lt;/form&gt;
 &nbsp;
       &lt;div className="bg-white border border-gray-300 overflow-x-auto"&gt;
-        &lt;table className="w-full text-left border-collapse text-sm"&gt;
+        &lt;table className="w-full text-left border-collapse text-sm responsive-table"&gt;
           &lt;thead&gt;
             &lt;tr className="border-b border-gray-300 bg-gray-50"&gt;
-              &lt;th className="p-3 font-semibold"&gt;Name&lt;/th&gt;
-              &lt;th className="p-3 font-semibold"&gt;Role&lt;/th&gt;
-              &lt;th className="p-3 font-semibold"&gt;Phone&lt;/th&gt;
-              &lt;th className="p-3 font-semibold"&gt;Assigned Matatu&lt;/th&gt;
-              &lt;th className="p-3 font-semibold"&gt;Actions&lt;/th&gt;
+              &lt;th className="p-3 font-semibold whitespace-nowrap"&gt;Name&lt;/th&gt;
+              &lt;th className="p-3 font-semibold whitespace-nowrap"&gt;Role&lt;/th&gt;
+              &lt;th className="p-3 font-semibold whitespace-nowrap"&gt;Phone&lt;/th&gt;
+              &lt;th className="p-3 font-semibold whitespace-nowrap"&gt;Assigned Matatu&lt;/th&gt;
+              &lt;th className="p-3 font-semibold whitespace-nowrap"&gt;Actions&lt;/th&gt;
             &lt;/tr&gt;
           &lt;/thead&gt;
           &lt;tbody&gt;
@@ -575,8 +593,10 @@ function CrewList() {
             ) : (
               crew.map((member) =&gt; (
                 &lt;tr key={member.id} className="border-b border-gray-200"&gt;
-                  &lt;td className="p-3 font-medium"&gt;{member.full_name}&lt;/td&gt;
-                  &lt;td className="p-3"&gt;
+                  &lt;td data-label="Name" className="p-3 font-medium"&gt;
+                    {member.full_name}
+                  &lt;/td&gt;
+                  &lt;td data-label="Role" className="p-3 md:whitespace-nowrap"&gt;
                     &lt;span
                       className={`text-xs font-semibold px-2 py-0.5 ${
                         member.role === 'Driver'
@@ -587,13 +607,20 @@ function CrewList() {
                       {member.role}
                     &lt;/span&gt;
                   &lt;/td&gt;
-                  &lt;td className="p-3 font-mono"&gt;{member.phone}&lt;/td&gt;
-                  &lt;td className="p-3 font-mono font-semibold"&gt;{member.assigned_plate}&lt;/td&gt;
-                  &lt;td className="p-3"&gt;
+                  &lt;td data-label="Phone" className="p-3 font-mono md:whitespace-nowrap"&gt;
+                    {member.phone}
+                  &lt;/td&gt;
+                  &lt;td
+                    data-label="Assigned Matatu"
+                    className="p-3 font-mono font-semibold md:whitespace-nowrap"
+                  &gt;
+                    {member.assigned_plate}
+                  &lt;/td&gt;
+                  &lt;td data-label="Actions" className="p-3 md:whitespace-nowrap"&gt;
                     &lt;button
                       type="button"
 <span class="fstat-no" title="function not covered" >                      onClick={() =&gt; <span class="cstat-no" title="statement not covered" >h</span>andleDeleteCrew(member.id, member.full_name)}</span>
-                      className="text-xs underline text-red-600 hover:text-red-800"
+                      className="text-xs underline text-red-600 hover:text-red-800 py-1"
                     &gt;
                       Delete
                     &lt;/button&gt;
@@ -616,7 +643,7 @@ export default CrewList
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-11-19T20:20:10.595Z
+                at 2026-11-20T10:06:00.551Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
