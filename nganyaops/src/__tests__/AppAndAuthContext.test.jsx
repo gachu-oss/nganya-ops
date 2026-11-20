@@ -106,7 +106,7 @@ describe('App Navigation, AuthProvider & Form Submission', () => {
       expect(mockInsert).toHaveBeenCalledWith([
         {
           plate_number: 'KDH 777Y',
-          nickname: 'Spartan',
+          nickname: 'Spartan', manufacturer: '-', seat_count: 14,
           route: 'CBD - Embakasi',
           daily_target: 14000,
           status: 'Active',
