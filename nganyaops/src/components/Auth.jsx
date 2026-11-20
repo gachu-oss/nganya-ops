@@ -54,13 +54,13 @@ function Auth() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
-      <div className="bg-white border border-gray-300 p-6 w-full max-w-md space-y-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-900">
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4 py-8">
+      <div className="bg-white border border-gray-300 p-5 sm:p-6 w-full max-w-md space-y-4">
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-lg sm:text-xl font-bold text-gray-900">
             {isSignUp ? 'Create NganyaOps Account' : 'Sign In to NganyaOps'}
           </h1>
-          <Link to="/" className="text-xs text-gray-600 underline hover:text-gray-900">
+          <Link to="/" className="text-xs text-gray-600 underline hover:text-gray-900 shrink-0 py-1">
             Back
           </Link>
         </div>
@@ -89,7 +89,7 @@ function Auth() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="operator@nganyaops.co.ke"
-              className="w-full border border-gray-300 px-3 py-2 text-sm"
+              className="w-full border border-gray-300 px-3 py-2.5 sm:py-2 text-base sm:text-sm"
             />
           </div>
 
@@ -105,14 +105,14 @@ function Auth() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="At least 6 characters"
-              className="w-full border border-gray-300 px-3 py-2 text-sm"
+              className="w-full border border-gray-300 px-3 py-2.5 sm:py-2 text-base sm:text-sm"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gray-900 text-white py-2 text-sm font-medium hover:bg-gray-800 disabled:opacity-50"
+            className="w-full bg-gray-900 text-white py-2.5 sm:py-2 text-sm font-medium hover:bg-gray-800 disabled:opacity-50"
           >
             {loading ? 'Please wait...' : isSignUp ? 'Register' : 'Sign In'}
           </button>
@@ -122,7 +122,7 @@ function Auth() {
           <button
             type="button"
             onClick={handleGoogleLogin}
-            className="w-full border border-gray-300 bg-white text-gray-800 py-2 text-sm font-medium hover:bg-gray-50"
+            className="w-full border border-gray-300 bg-white text-gray-800 py-2.5 sm:py-2 text-sm font-medium hover:bg-gray-50"
           >
             Continue with Google
           </button>
@@ -137,7 +137,7 @@ function Auth() {
               setErrorMsg('')
               setInfoMsg('')
             }}
-            className="underline font-semibold text-gray-900"
+            className="underline font-semibold text-gray-900 py-1"
           >
             {isSignUp ? 'Sign In' : 'Register'}
           </button>

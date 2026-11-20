@@ -99,7 +99,7 @@ function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="font-bold text-gray-900 text-base">Operational Overview</h1>
         <button
           type="button"
@@ -120,7 +120,7 @@ function Dashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-4 border border-gray-300">
           <p className="text-xs text-gray-500 uppercase font-semibold">Active Fleet</p>
-          <p className="text-2xl font-bold font-mono mt-1">
+          <p className="text-xl sm:text-2xl font-bold font-mono mt-1 break-words">
             {loading ? '...' : stats.activeVehicles}
           </p>
           <p className="text-xs text-gray-600 mt-1">{stats.garageVehicles} currently in garage</p>
@@ -128,7 +128,7 @@ function Dashboard() {
 
         <div className="bg-white p-4 border border-gray-300">
           <p className="text-xs text-gray-500 uppercase font-semibold">Total Gross Revenue</p>
-          <p className="text-2xl font-bold font-mono mt-1">
+          <p className="text-xl sm:text-2xl font-bold font-mono mt-1 break-words">
             {loading ? '...' : `KES ${stats.totalGross.toLocaleString()}`}
           </p>
           <p className="text-xs text-gray-600 mt-1">All logged shifts</p>
@@ -136,7 +136,7 @@ function Dashboard() {
 
         <div className="bg-white p-4 border border-gray-300">
           <p className="text-xs text-gray-500 uppercase font-semibold">Total Expenses</p>
-          <p className="text-2xl font-bold font-mono mt-1">
+          <p className="text-xl sm:text-2xl font-bold font-mono mt-1 break-words">
             {loading ? '...' : `KES ${(stats.tripExpenses + stats.garageExpenses).toLocaleString()}`}
           </p>
           <p className="text-xs text-gray-600 mt-1">
@@ -148,7 +148,7 @@ function Dashboard() {
         <div className="bg-white p-4 border border-gray-300">
           <p className="text-xs text-gray-500 uppercase font-semibold">Net Profit</p>
           <p
-            className={`text-2xl font-bold font-mono mt-1 ${
+            className={`text-xl sm:text-2xl font-bold font-mono mt-1 break-words ${
               stats.netProfit >= 0 ? 'text-green-700' : 'text-red-600'
             }`}
           >
@@ -165,17 +165,17 @@ function Dashboard() {
             Ranked by total net profit after shift expenses and garage repairs
           </p>
         </div>
-        <table className="w-full text-left border-collapse text-sm">
+        <table className="w-full text-left border-collapse text-sm responsive-table">
           <thead>
             <tr className="border-b border-gray-300 bg-gray-50">
-              <th className="p-3 font-semibold">Rank</th>
-              <th className="p-3 font-semibold">Matatu</th>
-              <th className="p-3 font-semibold">Route</th>
-              <th className="p-3 font-semibold">Trips</th>
-              <th className="p-3 font-semibold">Gross</th>
-              <th className="p-3 font-semibold">Shift Ops</th>
-              <th className="p-3 font-semibold">Garage</th>
-              <th className="p-3 font-semibold">Net Profit</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Rank</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Matatu</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Route</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Trips</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Gross</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Shift Ops</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Garage</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Net Profit</th>
             </tr>
           </thead>
           <tbody>
@@ -194,24 +194,35 @@ function Dashboard() {
             ) : (
               rankings.map((v, idx) => (
                 <tr key={v.plate_number} className="border-b border-gray-200">
-                  <td className="p-3 font-mono font-semibold">#{idx + 1}</td>
-                  <td className="p-3">
-                    <span className="font-mono font-semibold">{v.plate_number}</span>
-                    {v.nickname && v.nickname !== '-' && (
-                      <span className="text-xs text-gray-600 ml-2">({v.nickname})</span>
-                    )}
+                  <td data-label="Rank" className="p-3 font-mono font-semibold md:whitespace-nowrap">
+                    #{idx + 1}
                   </td>
-                  <td className="p-3">{v.route}</td>
-                  <td className="p-3 font-mono">{v.totalTrips}</td>
-                  <td className="p-3 font-mono">KES {v.gross.toLocaleString()}</td>
-                  <td className="p-3 font-mono text-gray-700">
+                  <td data-label="Matatu" className="p-3 md:whitespace-nowrap">
+                    <div>
+                      <span className="font-mono font-semibold">{v.plate_number}</span>
+                      {v.nickname && v.nickname !== '-' && (
+                        <span className="text-xs text-gray-600 ml-2">({v.nickname})</span>
+                      )}
+                    </div>
+                  </td>
+                  <td data-label="Route" className="p-3">
+                    {v.route}
+                  </td>
+                  <td data-label="Trips" className="p-3 font-mono md:whitespace-nowrap">
+                    {v.totalTrips}
+                  </td>
+                  <td data-label="Gross" className="p-3 font-mono md:whitespace-nowrap">
+                    KES {v.gross.toLocaleString()}
+                  </td>
+                  <td data-label="Shift Ops" className="p-3 font-mono text-gray-700 md:whitespace-nowrap">
                     KES {v.opsCost.toLocaleString()}
                   </td>
-                  <td className="p-3 font-mono text-gray-700">
+                  <td data-label="Garage" className="p-3 font-mono text-gray-700 md:whitespace-nowrap">
                     KES {v.repairCost.toLocaleString()}
                   </td>
                   <td
-                    className={`p-3 font-mono font-semibold ${
+                    data-label="Net Profit"
+                    className={`p-3 font-mono font-semibold md:whitespace-nowrap ${
                       v.net >= 0 ? 'text-green-700' : 'text-red-600'
                     }`}
                   >

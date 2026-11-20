@@ -96,11 +96,11 @@ function TripLogs() {
     <div className="space-y-6">
       <form onSubmit={handleAddLog} className="bg-white p-4 border border-gray-300">
         <h2 className="font-bold text-gray-900 mb-3">Log Daily Trip, Revenue & Expenses</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
           <select
             value={plateNumber}
             onChange={(e) => setPlateNumber(e.target.value)}
-            className="border border-gray-300 px-3 py-2 text-sm bg-white"
+            className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm bg-white"
             required
           >
             {vehicles.length === 0 ? (
@@ -117,7 +117,7 @@ function TripLogs() {
             type="date"
             value={tripDate}
             onChange={(e) => setTripDate(e.target.value)}
-            className="border border-gray-300 px-3 py-2 text-sm"
+            className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm"
             required
           />
           <input
@@ -126,7 +126,7 @@ function TripLogs() {
             placeholder="Trips Completed (e.g. 6)"
             value={tripsCount}
             onChange={(e) => setTripsCount(e.target.value)}
-            className="border border-gray-300 px-3 py-2 text-sm"
+            className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm"
             required
           />
           <input
@@ -135,19 +135,19 @@ function TripLogs() {
             placeholder="Gross Collection (KES)"
             value={grossRevenue}
             onChange={(e) => setGrossRevenue(e.target.value)}
-            className="border border-gray-300 px-3 py-2 text-sm"
+            className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm"
             required
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           <input
             type="number"
             min="0"
             placeholder="Fuel Cost (KES)"
             value={fuelCost}
             onChange={(e) => setFuelCost(e.target.value)}
-            className="border border-gray-300 px-3 py-2 text-sm"
+            className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm"
           />
           <input
             type="number"
@@ -155,7 +155,7 @@ function TripLogs() {
             placeholder="Crew Allowance (KES)"
             value={crewAllowance}
             onChange={(e) => setCrewAllowance(e.target.value)}
-            className="border border-gray-300 px-3 py-2 text-sm"
+            className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm"
           />
           <input
             type="number"
@@ -163,25 +163,25 @@ function TripLogs() {
             placeholder="Stage / Other Expenses (KES)"
             value={otherExpenses}
             onChange={(e) => setOtherExpenses(e.target.value)}
-            className="border border-gray-300 px-3 py-2 text-sm"
+            className="w-full min-w-0 sm:col-span-2 md:col-span-1 border border-gray-300 px-3 py-2 text-base sm:text-sm"
           />
         </div>
 
         <button
           type="submit"
           disabled={vehicles.length === 0}
-          className="mt-3 bg-gray-900 text-white px-4 py-2 text-sm font-medium hover:bg-gray-800 disabled:opacity-50"
+          className="w-full sm:w-auto mt-3 bg-gray-900 text-white px-4 py-2.5 sm:py-2 text-sm font-medium hover:bg-gray-800 disabled:opacity-50"
         >
           Save Shift Log
         </button>
       </form>
 
-      <div className="bg-white p-3 border border-gray-300 flex flex-col sm:flex-row gap-3 items-center justify-between">
+      <div className="bg-white p-3 border border-gray-300 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <select
             value={filterPlate}
             onChange={(e) => setFilterPlate(e.target.value)}
-            className="border border-gray-300 px-3 py-2 text-sm bg-white"
+            className="w-full sm:w-auto border border-gray-300 px-3 py-2 text-base sm:text-sm bg-white"
           >
             <option value="All">All Matatus</option>
             {loggedPlates.map((plate) => (
@@ -195,7 +195,7 @@ function TripLogs() {
             type="date"
             value={filterDate}
             onChange={(e) => setFilterDate(e.target.value)}
-            className="border border-gray-300 px-3 py-2 text-sm"
+            className="w-full sm:w-auto min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm"
           />
         </div>
 
@@ -206,7 +206,7 @@ function TripLogs() {
               setFilterPlate('All')
               setFilterDate('')
             }}
-            className="text-xs underline text-gray-700 hover:text-gray-900"
+            className="self-start sm:self-auto text-xs underline text-gray-700 hover:text-gray-900 py-1"
           >
             Clear Filters
           </button>
@@ -214,17 +214,17 @@ function TripLogs() {
       </div>
 
       <div className="bg-white border border-gray-300 overflow-x-auto">
-        <table className="w-full text-left border-collapse text-sm">
+        <table className="w-full text-left border-collapse text-sm responsive-table">
           <thead>
             <tr className="border-b border-gray-300 bg-gray-50">
-              <th className="p-3 font-semibold">Date</th>
-              <th className="p-3 font-semibold">Matatu</th>
-              <th className="p-3 font-semibold">Trips</th>
-              <th className="p-3 font-semibold">Gross</th>
-              <th className="p-3 font-semibold">Fuel</th>
-              <th className="p-3 font-semibold">Crew & Other</th>
-              <th className="p-3 font-semibold">Net Profit</th>
-              <th className="p-3 font-semibold">Actions</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Date</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Matatu</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Trips</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Gross</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Fuel</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Crew & Other</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Net Profit</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -242,30 +242,40 @@ function TripLogs() {
 
                 return (
                   <tr key={log.id} className="border-b border-gray-200">
-                    <td className="p-3 font-mono">{log.trip_date}</td>
-                    <td className="p-3 font-mono font-semibold">{log.plate_number}</td>
-                    <td className="p-3">{log.trips_count}</td>
-                    <td className="p-3 font-mono">
+                    <td data-label="Date" className="p-3 font-mono md:whitespace-nowrap">
+                      {log.trip_date}
+                    </td>
+                    <td data-label="Matatu" className="p-3 font-mono font-semibold md:whitespace-nowrap">
+                      {log.plate_number}
+                    </td>
+                    <td data-label="Trips" className="p-3 md:whitespace-nowrap">
+                      {log.trips_count}
+                    </td>
+                    <td data-label="Gross" className="p-3 font-mono md:whitespace-nowrap">
                       KES {Number(log.gross_revenue).toLocaleString()}
                     </td>
-                    <td className="p-3 font-mono text-gray-700">
+                    <td data-label="Fuel" className="p-3 font-mono text-gray-700 md:whitespace-nowrap">
                       KES {fuel.toLocaleString()}
                     </td>
-                    <td className="p-3 font-mono text-gray-700">
+                    <td
+                      data-label="Crew & Other"
+                      className="p-3 font-mono text-gray-700 md:whitespace-nowrap"
+                    >
                       KES {otherTotal.toLocaleString()}
                     </td>
                     <td
-                      className={`p-3 font-mono font-semibold ${
+                      data-label="Net Profit"
+                      className={`p-3 font-mono font-semibold md:whitespace-nowrap ${
                         net >= 0 ? 'text-green-700' : 'text-red-600'
                       }`}
                     >
                       KES {net.toLocaleString()}
                     </td>
-                    <td className="p-3">
+                    <td data-label="Actions" className="p-3 md:whitespace-nowrap">
                       <button
                         type="button"
                         onClick={() => handleDeleteLog(log.id, log.plate_number, log.trip_date)}
-                        className="text-xs underline text-red-600 hover:text-red-800"
+                        className="text-xs underline text-red-600 hover:text-red-800 py-1"
                       >
                         Delete
                       </button>

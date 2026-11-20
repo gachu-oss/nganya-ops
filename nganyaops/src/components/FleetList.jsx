@@ -109,13 +109,13 @@ function FleetList() {
     <div className="space-y-6">
       <form onSubmit={handleAddVehicle} className="bg-white p-4 border border-gray-300">
         <h2 className="font-bold text-gray-900 mb-3">Add Matatu to Fleet</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <input
             type="text"
             placeholder="Plate (e.g. KDG 412X)"
             value={plateNumber}
             onChange={(e) => setPlateNumber(e.target.value)}
-            className="border border-gray-300 px-3 py-2 text-sm"
+            className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm"
             required
           />
           <input
@@ -123,14 +123,14 @@ function FleetList() {
             placeholder="Nickname (Optional)"
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
-            className="border border-gray-300 px-3 py-2 text-sm"
+            className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm"
           />
           <input
             type="text"
             placeholder="Route (e.g. CBD - Kikuyu)"
             value={route}
             onChange={(e) => setRoute(e.target.value)}
-            className="border border-gray-300 px-3 py-2 text-sm"
+            className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm"
             required
           />
           <input
@@ -138,13 +138,13 @@ function FleetList() {
             placeholder="Daily Target (KES)"
             value={dailyTarget}
             onChange={(e) => setDailyTarget(e.target.value)}
-            className="border border-gray-300 px-3 py-2 text-sm"
+            className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm"
             required
           />
         </div>
         <button
           type="submit"
-          className="mt-3 bg-gray-900 text-white px-4 py-2 text-sm font-medium hover:bg-gray-800"
+          className="w-full sm:w-auto mt-3 bg-gray-900 text-white px-4 py-2.5 sm:py-2 text-sm font-medium hover:bg-gray-800"
         >
           Save Vehicle
         </button>
@@ -156,12 +156,12 @@ function FleetList() {
           placeholder="Search by plate, nickname, or route..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="border border-gray-300 px-3 py-2 text-sm flex-1"
+          className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm sm:flex-1"
         />
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="border border-gray-300 px-3 py-2 text-sm bg-white"
+          className="w-full sm:w-auto border border-gray-300 px-3 py-2 text-base sm:text-sm bg-white"
         >
           <option value="All">All Statuses</option>
           <option value="Active">Active Only</option>
@@ -170,16 +170,16 @@ function FleetList() {
       </div>
 
       <div className="bg-white border border-gray-300 overflow-x-auto">
-        <table className="w-full text-left border-collapse text-sm">
+        <table className="w-full text-left border-collapse text-sm responsive-table">
           <thead>
             <tr className="border-b border-gray-300 bg-gray-50">
-              <th className="p-3 font-semibold">Plate</th>
-              <th className="p-3 font-semibold">Nickname</th>
-              <th className="p-3 font-semibold">Route</th>
-              <th className="p-3 font-semibold">Daily Target</th>
-              <th className="p-3 font-semibold">Today&apos;s Target Check</th>
-              <th className="p-3 font-semibold">Status</th>
-              <th className="p-3 font-semibold">Actions</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Plate</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Nickname</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Route</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Daily Target</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Today&apos;s Target Check</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Status</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -201,11 +201,19 @@ function FleetList() {
 
                 return (
                   <tr key={v.id} className="border-b border-gray-200">
-                    <td className="p-3 font-mono font-semibold">{v.plate_number}</td>
-                    <td className="p-3">{v.nickname}</td>
-                    <td className="p-3">{v.route}</td>
-                    <td className="p-3 font-mono">KES {target.toLocaleString()}</td>
-                    <td className="p-3">
+                    <td data-label="Plate" className="p-3 font-mono font-semibold md:whitespace-nowrap">
+                      {v.plate_number}
+                    </td>
+                    <td data-label="Nickname" className="p-3">
+                      {v.nickname}
+                    </td>
+                    <td data-label="Route" className="p-3">
+                      {v.route}
+                    </td>
+                    <td data-label="Daily Target" className="p-3 font-mono md:whitespace-nowrap">
+                      KES {target.toLocaleString()}
+                    </td>
+                    <td data-label="Today's Target" className="p-3 md:whitespace-nowrap">
                       {!hasLogsToday ? (
                         <span className="text-xs text-gray-500">No logs today</span>
                       ) : hitTarget ? (
@@ -218,7 +226,7 @@ function FleetList() {
                         </span>
                       )}
                     </td>
-                    <td className="p-3">
+                    <td data-label="Status" className="p-3 md:whitespace-nowrap">
                       <span
                         className={`text-xs font-semibold px-2 py-0.5 ${
                           v.status === 'Active'
@@ -229,21 +237,23 @@ function FleetList() {
                         {v.status}
                       </span>
                     </td>
-                    <td className="p-3 space-x-3">
-                      <button
-                        type="button"
-                        onClick={() => toggleStatus(v)}
-                        className="text-xs underline text-gray-700 hover:text-gray-900"
-                      >
-                        Set {v.status === 'Active' ? 'Garage' : 'Active'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteVehicle(v.id, v.plate_number)}
-                        className="text-xs underline text-red-600 hover:text-red-800"
-                      >
-                        Delete
-                      </button>
+                    <td data-label="Actions" className="p-3 md:whitespace-nowrap">
+                      <div className="flex items-center justify-end md:justify-start gap-3">
+                        <button
+                          type="button"
+                          onClick={() => toggleStatus(v)}
+                          className="text-xs underline text-gray-700 hover:text-gray-900 py-1"
+                        >
+                          Set {v.status === 'Active' ? 'Garage' : 'Active'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteVehicle(v.id, v.plate_number)}
+                          className="text-xs underline text-red-600 hover:text-red-800 py-1"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 )
