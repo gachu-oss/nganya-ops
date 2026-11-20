@@ -4,10 +4,16 @@ import { supabase } from '../supabaseClient'
 function TripLogs() {
   const [logs, setLogs] = useState([])
   const [vehicles, setVehicles] = useState([])
+  const [crewList, setCrewList] = useState([])
+
   const [plateNumber, setPlateNumber] = useState('')
+  const [driverName, setDriverName] = useState('')
+  const [conductorName, setConductorName] = useState('')
   const [tripDate, setTripDate] = useState(() => new Date().toISOString().split('T')[0])
   const [tripsCount, setTripsCount] = useState('')
   const [grossRevenue, setGrossRevenue] = useState('')
+  const [cashCollected, setCashCollected] = useState('')
+  const [mpesaCollected, setMpesaCollected] = useState('')
   const [fuelCost, setFuelCost] = useState('')
   const [crewAllowance, setCrewAllowance] = useState('')
   const [otherExpenses, setOtherExpenses] = useState('')
@@ -18,7 +24,20 @@ function TripLogs() {
   useEffect(() => {
     fetchLogs()
     fetchActiveVehicles()
+    fetchCrew()
   }, [])
+
+  useEffect(() => {
+    if (!plateNumber || crewList.length === 0) return
+    const assignedDriver = crewList.find(
+      (c) => c.assigned_plate === plateNumber && c.role === 'Driver'
+    )
+    const assignedConductor = crewList.find(
+      (c) => c.assigned_plate === plateNumber && c.role === 'Conductor'
+    )
+    setDriverName(assignedDriver ? assignedDriver.full_name : '')
+    setConductorName(assignedConductor ? assignedConductor.full_name : '')
+  }, [plateNumber, crewList])
 
   async function fetchLogs() {
     const { data, error } = await supabase
@@ -47,30 +66,55 @@ function TripLogs() {
     }
   }
 
+  async function fetchCrew() {
+    const { data, error } = await supabase
+      .from('crew')
+      .select('id, full_name, role, assigned_plate')
+      .order('full_name', { ascending: true })
+
+    if (!error && data) {
+      setCrewList(data)
+    }
+  }
+
   async function handleAddLog(e) {
     e.preventDefault()
     if (!plateNumber || !tripDate || !tripsCount || !grossRevenue) return
 
+    const gross = Number(grossRevenue)
+    const hasSplit = cashCollected !== '' || mpesaCollected !== ''
+    const cash = hasSplit ? Number(cashCollected || 0) : gross
+    const mpesa = hasSplit ? Number(mpesaCollected || 0) : 0
+
     const { error } = await supabase.from('trip_logs').insert([
       {
         plate_number: plateNumber,
+        driver_name: driverName || null,
+        conductor_name: conductorName || null,
         trip_date: tripDate,
         trips_count: Number(tripsCount),
-        gross_revenue: Number(grossRevenue),
+        gross_revenue: gross,
+        cash_collected: cash,
+        mpesa_collected: mpesa,
         fuel_cost: Number(fuelCost || 0),
         crew_allowance: Number(crewAllowance || 0),
         other_expenses: Number(otherExpenses || 0),
       },
     ])
 
-    if (!error) {
-      setTripsCount('')
-      setGrossRevenue('')
-      setFuelCost('')
-      setCrewAllowance('')
-      setOtherExpenses('')
-      fetchLogs()
+    if (error) {
+      alert('Error saving shift log: ' + error.message)
+      return
     }
+
+    setTripsCount('')
+    setGrossRevenue('')
+    setCashCollected('')
+    setMpesaCollected('')
+    setFuelCost('')
+    setCrewAllowance('')
+    setOtherExpenses('')
+    fetchLogs()
   }
 
   async function handleDeleteLog(id, plate, date) {
@@ -84,6 +128,9 @@ function TripLogs() {
     }
   }
 
+  const drivers = crewList.filter((c) => c.role === 'Driver')
+  const conductors = crewList.filter((c) => c.role === 'Conductor')
+
   const loggedPlates = [...new Set(logs.map((log) => log.plate_number))]
 
   const filteredLogs = logs.filter((log) => {
@@ -91,6 +138,9 @@ function TripLogs() {
     const matchesDate = !filterDate || log.trip_date === filterDate
     return matchesPlate && matchesDate
   })
+
+  const totalCash = filteredLogs.reduce((sum, l) => sum + Number(l.cash_collected || 0), 0)
+  const totalMpesa = filteredLogs.reduce((sum, l) => sum + Number(l.mpesa_collected || 0), 0)
 
   return (
     <div className="space-y-6">
@@ -140,6 +190,54 @@ function TripLogs() {
           />
         </div>
 
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
+          <select
+            aria-label="Shift Driver"
+            value={driverName}
+            onChange={(e) => setDriverName(e.target.value)}
+            className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm bg-white"
+          >
+            <option value="">Driver (Auto / Unassigned)</option>
+            {drivers.map((d) => (
+              <option key={d.id} value={d.full_name}>
+                Driver: {d.full_name}
+              </option>
+            ))}
+          </select>
+
+          <select
+            aria-label="Shift Conductor"
+            value={conductorName}
+            onChange={(e) => setConductorName(e.target.value)}
+            className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm bg-white"
+          >
+            <option value="">Conductor (Auto / Unassigned)</option>
+            {conductors.map((c) => (
+              <option key={c.id} value={c.full_name}>
+                Conductor: {c.full_name}
+              </option>
+            ))}
+          </select>
+
+          <input
+            type="number"
+            min="0"
+            placeholder="Cash Collected (KES)"
+            value={cashCollected}
+            onChange={(e) => setCashCollected(e.target.value)}
+            className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm"
+          />
+
+          <input
+            type="number"
+            min="0"
+            placeholder="M-Pesa Till / PoChi (KES)"
+            value={mpesaCollected}
+            onChange={(e) => setMpesaCollected(e.target.value)}
+            className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm"
+          />
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           <input
             type="number"
@@ -175,6 +273,23 @@ function TripLogs() {
           Save Shift Log
         </button>
       </form>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="bg-white p-3 border border-gray-300 flex items-center justify-between">
+          <span className="text-xs font-semibold uppercase text-gray-500">Total Cash Remitted</span>
+          <span className="font-mono font-bold text-gray-900">
+            KES {totalCash.toLocaleString()}
+          </span>
+        </div>
+        <div className="bg-white p-3 border border-gray-300 flex items-center justify-between">
+          <span className="text-xs font-semibold uppercase text-green-700">
+            Total M-Pesa Till / PoChi
+          </span>
+          <span className="font-mono font-bold text-green-700">
+            KES {totalMpesa.toLocaleString()}
+          </span>
+        </div>
+      </div>
 
       <div className="bg-white p-3 border border-gray-300 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
@@ -218,11 +333,11 @@ function TripLogs() {
           <thead>
             <tr className="border-b border-gray-300 bg-gray-50">
               <th className="p-3 font-semibold whitespace-nowrap">Date</th>
-              <th className="p-3 font-semibold whitespace-nowrap">Matatu</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Matatu & Crew</th>
               <th className="p-3 font-semibold whitespace-nowrap">Trips</th>
               <th className="p-3 font-semibold whitespace-nowrap">Gross</th>
-              <th className="p-3 font-semibold whitespace-nowrap">Fuel</th>
-              <th className="p-3 font-semibold whitespace-nowrap">Crew & Other</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Cash / M-Pesa</th>
+              <th className="p-3 font-semibold whitespace-nowrap">Expenses</th>
               <th className="p-3 font-semibold whitespace-nowrap">Net Profit</th>
               <th className="p-3 font-semibold whitespace-nowrap">Actions</th>
             </tr>
@@ -236,32 +351,50 @@ function TripLogs() {
               </tr>
             ) : (
               filteredLogs.map((log) => {
+                const gross = Number(log.gross_revenue || 0)
+                const cash = Number(log.cash_collected || 0)
+                const mpesa = Number(log.mpesa_collected || 0)
+                const splitTotal = cash + mpesa
+                const hasMismatch = splitTotal > 0 && splitTotal !== gross
                 const fuel = Number(log.fuel_cost || 0)
                 const otherTotal = Number(log.crew_allowance || 0) + Number(log.other_expenses || 0)
-                const net = Number(log.gross_revenue) - fuel - otherTotal
+                const totalExpenses = fuel + otherTotal
+                const net = gross - totalExpenses
 
                 return (
                   <tr key={log.id} className="border-b border-gray-200">
                     <td data-label="Date" className="p-3 font-mono md:whitespace-nowrap">
                       {log.trip_date}
                     </td>
-                    <td data-label="Matatu" className="p-3 font-mono font-semibold md:whitespace-nowrap">
-                      {log.plate_number}
+                    <td data-label="Matatu & Crew" className="p-3">
+                      <div className="font-mono font-semibold">{log.plate_number}</div>
+                      {(log.driver_name || log.conductor_name) && (
+                        <div className="text-xs text-gray-600 mt-0.5">
+                          {log.driver_name ? `D: ${log.driver_name}` : ''}
+                          {log.driver_name && log.conductor_name ? ' | ' : ''}
+                          {log.conductor_name ? `C: ${log.conductor_name}` : ''}
+                        </div>
+                      )}
                     </td>
                     <td data-label="Trips" className="p-3 md:whitespace-nowrap">
                       {log.trips_count}
                     </td>
                     <td data-label="Gross" className="p-3 font-mono md:whitespace-nowrap">
-                      KES {Number(log.gross_revenue).toLocaleString()}
+                      KES {gross.toLocaleString()}
                     </td>
-                    <td data-label="Fuel" className="p-3 font-mono text-gray-700 md:whitespace-nowrap">
-                      KES {fuel.toLocaleString()}
+                    <td data-label="Cash / M-Pesa" className="p-3 font-mono text-xs md:whitespace-nowrap">
+                      <div>Cash: {cash.toLocaleString()}</div>
+                      <div className="text-green-700 font-semibold">
+                        M-Pesa: {mpesa.toLocaleString()}
+                      </div>
+                      {hasMismatch && (
+                        <span className="inline-block mt-1 px-1.5 py-0.5 bg-amber-100 text-amber-900 font-sans font-semibold">
+                          Split diff: KES {(gross - splitTotal).toLocaleString()}
+                        </span>
+                      )}
                     </td>
-                    <td
-                      data-label="Crew & Other"
-                      className="p-3 font-mono text-gray-700 md:whitespace-nowrap"
-                    >
-                      KES {otherTotal.toLocaleString()}
+                    <td data-label="Expenses" className="p-3 font-mono text-gray-700 md:whitespace-nowrap">
+                      KES {totalExpenses.toLocaleString()}
                     </td>
                     <td
                       data-label="Net Profit"
