@@ -4,15 +4,12 @@ import { supabase } from '../supabaseClient'
 function MaintenanceLog() {
   const [records, setRecords] = useState([])
   const [vehicles, setVehicles] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [errorMsg, setErrorMsg] = useState('')
   const [plateNumber, setPlateNumber] = useState('')
   const [serviceDate, setServiceDate] = useState(() => new Date().toISOString().split('T')[0])
   const [description, setDescription] = useState('')
   const [cost, setCost] = useState('')
-
-  useEffect(() => {
-    fetchRecords()
-    fetchVehicles()
-  }, [])
 
   async function fetchRecords() {
     const { data, error } = await supabase
@@ -21,28 +18,61 @@ function MaintenanceLog() {
       .order('service_date', { ascending: false })
       .order('id', { ascending: false })
 
-    if (!error && data) {
+    if (error) {
+      setErrorMsg('Failed to load maintenance logs: ' + error.message)
+      return
+    }
+    if (data) {
       setRecords(data)
     }
   }
 
-  async function fetchVehicles() {
-    const { data, error } = await supabase
-      .from('vehicles')
-      .select('plate_number')
-      .order('plate_number', { ascending: true })
+  useEffect(() => {
+    let active = true
 
-    if (!error && data) {
-      setVehicles(data)
-      if (data.length > 0 && !plateNumber) {
-        setPlateNumber(data[0].plate_number)
+    async function loadMaintenanceData() {
+      const [recordsRes, vehiclesRes] = await Promise.all([
+        supabase
+          .from('maintenance_logs')
+          .select('*')
+          .order('service_date', { ascending: false })
+          .order('id', { ascending: false }),
+        supabase.from('vehicles').select('plate_number').order('plate_number', { ascending: true }),
+      ])
+
+      if (!active) return
+
+      if (recordsRes.error || vehiclesRes.error) {
+        setErrorMsg('Failed to load maintenance data. Please try refreshing.')
+      } else {
+        setErrorMsg('')
       }
+
+      if (recordsRes.data) {
+        setRecords(recordsRes.data)
+      }
+
+      if (vehiclesRes.data) {
+        setVehicles(vehiclesRes.data)
+        if (vehiclesRes.data.length > 0) {
+          setPlateNumber((prev) => prev || vehiclesRes.data[0].plate_number)
+        }
+      }
+
+      setLoading(false)
     }
-  }
+
+    loadMaintenanceData()
+
+    return () => {
+      active = false
+    }
+  }, [])
 
   async function handleAddRecord(e) {
     e.preventDefault()
     if (!plateNumber || !serviceDate || !description || !cost) return
+    setErrorMsg('')
 
     const { error } = await supabase.from('maintenance_logs').insert([
       {
@@ -54,44 +84,60 @@ function MaintenanceLog() {
       },
     ])
 
-    if (!error) {
-      setDescription('')
-      setCost('')
-      fetchRecords()
+    if (error) {
+      setErrorMsg('Error saving maintenance log: ' + error.message)
+      return
     }
+
+    setDescription('')
+    setCost('')
+    fetchRecords()
   }
 
   async function toggleStatus(record) {
+    setErrorMsg('')
     const nextStatus = record.status === 'Pending' ? 'Completed' : 'Pending'
     const { error } = await supabase
       .from('maintenance_logs')
       .update({ status: nextStatus })
       .eq('id', record.id)
 
-    if (!error) {
-      fetchRecords()
+    if (error) {
+      setErrorMsg('Failed to update status: ' + error.message)
+      return
     }
+    fetchRecords()
   }
 
   async function handleDeleteRecord(id, plate) {
     const confirmed = window.confirm(`Delete maintenance record for ${plate}?`)
     if (!confirmed) return
+    setErrorMsg('')
 
     const { error } = await supabase.from('maintenance_logs').delete().eq('id', id)
 
-    if (!error) {
-      fetchRecords()
+    if (error) {
+      setErrorMsg('Failed to delete maintenance record: ' + error.message)
+      return
     }
+    fetchRecords()
   }
 
   const totalCost = records.reduce((sum, item) => sum + Number(item.cost || 0), 0)
 
   return (
     <div className="space-y-6">
+      {errorMsg && (
+        <div role="alert" className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 text-sm">
+          {errorMsg}
+        </div>
+      )}
+
       <form onSubmit={handleAddRecord} className="bg-white p-4 border border-gray-300">
         <h2 className="font-bold text-gray-900 mb-3">Log Garage / Maintenance Expense</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <select
+            aria-label="Matatu Plate"
             value={plateNumber}
             onChange={(e) => setPlateNumber(e.target.value)}
             className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm bg-white"
@@ -109,6 +155,7 @@ function MaintenanceLog() {
           </select>
           <input
             type="date"
+            aria-label="Service Date"
             value={serviceDate}
             onChange={(e) => setServiceDate(e.target.value)}
             className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm"
@@ -116,6 +163,7 @@ function MaintenanceLog() {
           />
           <input
             type="text"
+            aria-label="Work Description"
             placeholder="Issue / Work Done (e.g. Brake pads)"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -125,6 +173,7 @@ function MaintenanceLog() {
           <input
             type="number"
             min="0"
+            aria-label="Repair Cost (KES)"
             placeholder="Repair Cost (KES)"
             value={cost}
             onChange={(e) => setCost(e.target.value)}
@@ -161,7 +210,13 @@ function MaintenanceLog() {
             </tr>
           </thead>
           <tbody>
-            {records.length === 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan="6" className="p-4 text-gray-500 text-center">
+                  Loading maintenance logs...
+                </td>
+              </tr>
+            ) : records.length === 0 ? (
               <tr>
                 <td colSpan="6" className="p-4 text-gray-500 text-center">
                   No maintenance records logged yet.

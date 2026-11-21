@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../supabaseClient'
 import { getExpiryStatus } from '../utils/compliance'
 
@@ -12,6 +12,8 @@ function badgeClasses(tone) {
 function FleetList() {
   const [vehicles, setVehicles] = useState([])
   const [todayNetByPlate, setTodayNetByPlate] = useState({})
+  const [loading, setLoading] = useState(true)
+  const [errorMsg, setErrorMsg] = useState('')
   const [plateNumber, setPlateNumber] = useState('')
   const [nickname, setNickname] = useState('')
   const [manufacturer, setManufacturer] = useState('')
@@ -22,11 +24,7 @@ function FleetList() {
   const [ntsaExpiry, setNtsaExpiry] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('All')
-
-  useEffect(() => {
-    fetchVehicles()
-    fetchTodayPerformance()
-  }, [])
+  const plateInputRef = useRef(null)
 
   async function fetchVehicles() {
     const { data, error } = await supabase
@@ -34,35 +32,67 @@ function FleetList() {
       .select('*')
       .order('id', { ascending: false })
 
-    if (!error && data) {
+    if (error) {
+      setErrorMsg('Failed to load vehicles: ' + error.message)
+      return
+    }
+    if (data) {
       setVehicles(data)
     }
   }
 
-  async function fetchTodayPerformance() {
-    const today = new Date().toISOString().split('T')[0]
-    const { data, error } = await supabase
-      .from('trip_logs')
-      .select('plate_number, gross_revenue, fuel_cost, crew_allowance, other_expenses')
-      .eq('trip_date', today)
+  useEffect(() => {
+    let active = true
 
-    if (!error && data) {
-      const totals = {}
-      data.forEach((log) => {
-        const net =
-          Number(log.gross_revenue || 0) -
-          Number(log.fuel_cost || 0) -
-          Number(log.crew_allowance || 0) -
-          Number(log.other_expenses || 0)
-        totals[log.plate_number] = (totals[log.plate_number] || 0) + net
-      })
-      setTodayNetByPlate(totals)
+    async function loadFleetData() {
+      const today = new Date().toISOString().split('T')[0]
+      const [vehiclesRes, tripsRes] = await Promise.all([
+        supabase.from('vehicles').select('*').order('id', { ascending: false }),
+        supabase
+          .from('trip_logs')
+          .select('plate_number, gross_revenue, fuel_cost, crew_allowance, other_expenses')
+          .eq('trip_date', today),
+      ])
+
+      if (!active) return
+
+      if (vehiclesRes.error || tripsRes.error) {
+        setErrorMsg('Failed to load fleet data. Please try refreshing.')
+      } else {
+        setErrorMsg('')
+      }
+
+      if (vehiclesRes.data) {
+        setVehicles(vehiclesRes.data)
+      }
+
+      if (tripsRes.data) {
+        const totals = {}
+        tripsRes.data.forEach((log) => {
+          const net =
+            Number(log.gross_revenue || 0) -
+            Number(log.fuel_cost || 0) -
+            Number(log.crew_allowance || 0) -
+            Number(log.other_expenses || 0)
+          totals[log.plate_number] = (totals[log.plate_number] || 0) + net
+        })
+        setTodayNetByPlate(totals)
+      }
+
+      setLoading(false)
     }
-  }
+
+    loadFleetData()
+
+    return () => {
+      active = false
+    }
+  }, [])
 
   async function handleAddVehicle(e) {
     e.preventDefault()
     if (!plateNumber || !route || !dailyTarget) return
+    setErrorMsg('')
 
     const newVehicle = {
       plate_number: plateNumber.toUpperCase(),
@@ -80,7 +110,7 @@ function FleetList() {
     const { error } = await supabase.from('vehicles').insert([newVehicle])
 
     if (error) {
-      alert('Error saving vehicle: ' + error.message)
+      setErrorMsg('Error saving vehicle: ' + error.message)
       return
     }
 
@@ -92,30 +122,37 @@ function FleetList() {
     setDailyTarget('')
     setInsuranceExpiry('')
     setNtsaExpiry('')
+    plateInputRef.current?.focus()
     fetchVehicles()
   }
 
   async function toggleStatus(vehicle) {
+    setErrorMsg('')
     const nextStatus = vehicle.status === 'Active' ? 'Garage' : 'Active'
     const { error } = await supabase
       .from('vehicles')
       .update({ status: nextStatus })
       .eq('id', vehicle.id)
 
-    if (!error) {
-      fetchVehicles()
+    if (error) {
+      setErrorMsg('Failed to update vehicle status: ' + error.message)
+      return
     }
+    fetchVehicles()
   }
 
   async function handleDeleteVehicle(id, plate) {
     const confirmed = window.confirm(`Remove ${plate} from the fleet?`)
     if (!confirmed) return
+    setErrorMsg('')
 
     const { error } = await supabase.from('vehicles').delete().eq('id', id)
 
-    if (!error) {
-      fetchVehicles()
+    if (error) {
+      setErrorMsg('Failed to delete vehicle: ' + error.message)
+      return
     }
+    fetchVehicles()
   }
 
   const filteredVehicles = vehicles.filter((v) => {
@@ -132,11 +169,19 @@ function FleetList() {
 
   return (
     <div className="space-y-6">
+      {errorMsg && (
+        <div role="alert" className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 text-sm">
+          {errorMsg}
+        </div>
+      )}
+
       <form onSubmit={handleAddVehicle} className="bg-white p-4 border border-gray-300">
         <h2 className="font-bold text-gray-900 mb-3">Add Matatu to Fleet</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <input
+            ref={plateInputRef}
             type="text"
+            aria-label="Plate Number"
             placeholder="Plate (e.g. KDG 412X)"
             value={plateNumber}
             onChange={(e) => setPlateNumber(e.target.value)}
@@ -145,6 +190,7 @@ function FleetList() {
           />
           <input
             type="text"
+            aria-label="Nickname"
             placeholder="Nickname (Optional)"
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
@@ -152,6 +198,7 @@ function FleetList() {
           />
           <input
             type="text"
+            aria-label="Manufacturer or Model"
             placeholder="Manufacturer / Model (e.g. Isuzu NQR)"
             value={manufacturer}
             onChange={(e) => setManufacturer(e.target.value)}
@@ -168,6 +215,7 @@ function FleetList() {
           </select>
           <input
             type="text"
+            aria-label="Route"
             placeholder="Route (e.g. CBD - Kikuyu)"
             value={route}
             onChange={(e) => setRoute(e.target.value)}
@@ -176,6 +224,7 @@ function FleetList() {
           />
           <input
             type="number"
+            aria-label="Daily Target (KES)"
             placeholder="Daily Target (KES)"
             value={dailyTarget}
             onChange={(e) => setDailyTarget(e.target.value)}
@@ -222,12 +271,14 @@ function FleetList() {
       <div className="bg-white p-3 border border-gray-300 flex flex-col sm:flex-row gap-3 justify-between">
         <input
           type="text"
+          aria-label="Search fleet"
           placeholder="Search by plate, nickname, manufacturer, or route..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm sm:flex-1"
         />
         <select
+          aria-label="Filter by status"
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
           className="w-full sm:w-auto border border-gray-300 px-3 py-2 text-base sm:text-sm bg-white"
@@ -254,7 +305,13 @@ function FleetList() {
             </tr>
           </thead>
           <tbody>
-            {filteredVehicles.length === 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan="9" className="p-4 text-gray-500 text-center">
+                  Loading fleet...
+                </td>
+              </tr>
+            ) : filteredVehicles.length === 0 ? (
               <tr>
                 <td colSpan="9" className="p-4 text-gray-500 text-center">
                   No matching vehicles found.

@@ -1,9 +1,13 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import FleetList from '../components/FleetList'
 import CrewList from '../components/CrewList'
 import TripLogs from '../components/TripLogs'
 import MaintenanceLog from '../components/MaintenanceLog'
+
+const mockInsert = vi.fn().mockResolvedValue({ error: null })
+const mockUpdateEq = vi.fn().mockResolvedValue({ error: null })
+const mockDeleteEq = vi.fn().mockResolvedValue({ error: null })
 
 const mockVehicles = [
   {
@@ -87,9 +91,9 @@ vi.mock('../supabaseClient', () => ({
         eq: () => chain,
         order: () => chain,
         then: (resolve) => resolve(resolveTable()),
-        insert: vi.fn().mockResolvedValue({ error: null }),
-        update: () => ({ eq: vi.fn().mockResolvedValue({ error: null }) }),
-        delete: () => ({ eq: vi.fn().mockResolvedValue({ error: null }) }),
+        insert: mockInsert,
+        update: () => ({ eq: mockUpdateEq }),
+        delete: () => ({ eq: mockDeleteEq }),
       }
       return chain
     },
@@ -97,7 +101,12 @@ vi.mock('../supabaseClient', () => ({
 }))
 
 describe('Fleet and Operations Components', () => {
-  it('renders FleetList, displays target hit badge, and filters by search term', async () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.spyOn(window, 'confirm').mockReturnValue(true)
+  })
+
+  it('renders FleetList, filters by status/search, toggles status, and deletes vehicle', async () => {
     render(<FleetList />)
 
     await waitFor(() => {
@@ -112,32 +121,111 @@ describe('Fleet and Operations Components', () => {
 
     expect(screen.getByText('KDG 412X')).toBeInTheDocument()
     expect(screen.queryByText('KDB 900Z')).not.toBeInTheDocument()
+
+    fireEvent.change(screen.getByPlaceholderText('Search by plate, nickname, manufacturer, or route...'), {
+      target: { value: '' },
+    })
+    fireEvent.change(screen.getByLabelText('Filter by status'), { target: { value: 'Garage' } })
+    expect(screen.queryByText('KDG 412X')).not.toBeInTheDocument()
+    expect(screen.getByText('KDB 900Z')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Set Active' }))
+    await waitFor(() => expect(mockUpdateEq).toHaveBeenCalledWith('id', 2))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }))
+    await waitFor(() => expect(mockDeleteEq).toHaveBeenCalledWith('id', 2))
   })
 
-  it('renders CrewList roster entries', async () => {
+  it('renders CrewList roster entries, registers a crew member, and deletes an entry', async () => {
     render(<CrewList />)
 
     await waitFor(() => {
       expect(screen.getByText('Kamau Njoroge')).toBeInTheDocument()
       expect(screen.getAllByText('Driver').length).toBeGreaterThan(0)
     })
+
+    fireEvent.change(screen.getByLabelText('Full Name'), { target: { value: 'Otieno Ochieng' } })
+    fireEvent.change(screen.getByLabelText('Crew Role'), { target: { value: 'Conductor' } })
+    fireEvent.change(screen.getByLabelText('Phone Number'), { target: { value: '0722111222' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Save Crew Member' }))
+
+    await waitFor(() => {
+      expect(mockInsert).toHaveBeenCalledWith([
+        {
+          full_name: 'Otieno Ochieng',
+          role: 'Conductor',
+          phone: '0722111222',
+          assigned_plate: 'KDG 412X',
+        },
+      ])
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }))
+    await waitFor(() => expect(mockDeleteEq).toHaveBeenCalledWith('id', 1))
   })
 
-  it('renders TripLogs and calculates net profit per shift', async () => {
+  it('renders TripLogs, logs a Cash/M-Pesa shift, filters, and deletes a log', async () => {
     render(<TripLogs />)
 
     await waitFor(() => {
       expect(screen.getByText('KES 16,000')).toBeInTheDocument()
       expect(screen.getByText('KES 11,000')).toBeInTheDocument()
     })
+
+    fireEvent.change(screen.getByLabelText('Trips Completed'), { target: { value: '5' } })
+    fireEvent.change(screen.getByLabelText('Gross Collection (KES)'), { target: { value: '12000' } })
+    fireEvent.change(screen.getByLabelText('Cash Collected (KES)'), { target: { value: '7000' } })
+    fireEvent.change(screen.getByLabelText('M-Pesa Till or PoChi (KES)'), { target: { value: '5000' } })
+    fireEvent.change(screen.getByLabelText('Fuel Cost (KES)'), { target: { value: '3000' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Save Shift Log' }))
+
+    await waitFor(() => {
+      expect(mockInsert).toHaveBeenCalledWith([
+        expect.objectContaining({
+          plate_number: 'KDG 412X',
+          driver_name: 'Kamau Njoroge',
+          trips_count: 5,
+          gross_revenue: 12000,
+          cash_collected: 7000,
+          mpesa_collected: 5000,
+          fuel_cost: 3000,
+        }),
+      ])
+    })
+
+    fireEvent.change(screen.getByLabelText('Filter by Matatu'), { target: { value: 'KDG 412X' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Clear Filters' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }))
+    await waitFor(() => expect(mockDeleteEq).toHaveBeenCalledWith('id', 1))
   })
 
-  it('renders MaintenanceLog and displays total garage spend', async () => {
+  it('renders MaintenanceLog, logs repair, toggles status, and deletes record', async () => {
     render(<MaintenanceLog />)
 
     await waitFor(() => {
       expect(screen.getByText('Brake pads')).toBeInTheDocument()
       expect(screen.getAllByText('KES 4,500').length).toBeGreaterThan(0)
     })
+
+    fireEvent.change(screen.getByLabelText('Work Description'), { target: { value: 'Oil change' } })
+    fireEvent.change(screen.getByLabelText('Repair Cost (KES)'), { target: { value: '2500' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Save Maintenance Log' }))
+
+    await waitFor(() => {
+      expect(mockInsert).toHaveBeenCalledWith([
+        expect.objectContaining({
+          plate_number: 'KDG 412X',
+          description: 'Oil change',
+          cost: 2500,
+          status: 'Pending',
+        }),
+      ])
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Mark Completed' }))
+    await waitFor(() => expect(mockUpdateEq).toHaveBeenCalledWith('id', 1))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }))
+    await waitFor(() => expect(mockDeleteEq).toHaveBeenCalledWith('id', 1))
   })
 })

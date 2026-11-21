@@ -1,26 +1,46 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Navigate, Link } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import { useAuth } from '../context/AuthContext'
 
 function Auth() {
-  const { user } = useAuth()
+  const {
+    user,
+    loading: authLoading,
+    authError,
+    logoutMessage,
+    clearAuthMessages,
+  } = useAuth()
   const [isSignUp, setIsSignUp] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [oauthLoading, setOauthLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
   const [infoMsg, setInfoMsg] = useState('')
+  const emailInputRef = useRef(null)
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4 text-sm text-gray-600">
+        Completing sign-in...
+      </div>
+    )
+  }
 
   if (user) {
     return <Navigate to="/dashboard" replace />
   }
+
+  const visibleError = errorMsg || authError
+  const visibleInfo = infoMsg || logoutMessage
 
   async function handleSubmit(e) {
     e.preventDefault()
     setLoading(true)
     setErrorMsg('')
     setInfoMsg('')
+    clearAuthMessages?.()
 
     if (isSignUp) {
       const { error } = await supabase.auth.signUp({ email, password })
@@ -41,16 +61,34 @@ function Auth() {
 
   async function handleGoogleLogin() {
     setErrorMsg('')
-    const { error } = await supabase.auth.signInWithOAuth({
+    setInfoMsg('')
+    clearAuthMessages?.()
+    setOauthLoading(true)
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/dashboard`,
+        redirectTo: `${window.location.origin}/login`,
+        queryParams: {
+          prompt: 'select_account',
+        },
       },
     })
 
     if (error) {
       setErrorMsg(error.message)
+      setOauthLoading(false)
+    } else if (!data?.url) {
+      setOauthLoading(false)
     }
+  }
+
+  function handleToggleMode() {
+    setIsSignUp(!isSignUp)
+    setErrorMsg('')
+    setInfoMsg('')
+    clearAuthMessages?.()
+    emailInputRef.current?.focus()
   }
 
   return (
@@ -65,15 +103,15 @@ function Auth() {
           </Link>
         </div>
 
-        {errorMsg && (
-          <div className="bg-red-50 border border-red-300 text-red-700 px-3 py-2 text-xs">
-            {errorMsg}
+        {visibleError && (
+          <div role="alert" className="bg-red-50 border border-red-300 text-red-700 px-3 py-2 text-xs">
+            {visibleError}
           </div>
         )}
 
-        {infoMsg && (
-          <div className="bg-green-50 border border-green-300 text-green-700 px-3 py-2 text-xs">
-            {infoMsg}
+        {visibleInfo && (
+          <div role="status" className="bg-green-50 border border-green-300 text-green-700 px-3 py-2 text-xs">
+            {visibleInfo}
           </div>
         )}
 
@@ -83,6 +121,7 @@ function Auth() {
               Email Address
             </label>
             <input
+              ref={emailInputRef}
               id="email"
               type="email"
               required
@@ -111,7 +150,7 @@ function Auth() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || oauthLoading}
             className="w-full bg-gray-900 text-white py-2.5 sm:py-2 text-sm font-medium hover:bg-gray-800 disabled:opacity-50"
           >
             {loading ? 'Please wait...' : isSignUp ? 'Register' : 'Sign In'}
@@ -121,10 +160,11 @@ function Auth() {
         <div className="border-t border-gray-200 pt-3">
           <button
             type="button"
+            disabled={loading || oauthLoading}
             onClick={handleGoogleLogin}
-            className="w-full border border-gray-300 bg-white text-gray-800 py-2.5 sm:py-2 text-sm font-medium hover:bg-gray-50"
+            className="w-full border border-gray-300 bg-white text-gray-800 py-2.5 sm:py-2 text-sm font-medium hover:bg-gray-50 disabled:opacity-50"
           >
-            Continue with Google
+            {oauthLoading ? 'Redirecting to Google...' : 'Continue with Google'}
           </button>
         </div>
 
@@ -132,11 +172,7 @@ function Auth() {
           {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
           <button
             type="button"
-            onClick={() => {
-              setIsSignUp(!isSignUp)
-              setErrorMsg('')
-              setInfoMsg('')
-            }}
+            onClick={handleToggleMode}
             className="underline font-semibold text-gray-900 py-1"
           >
             {isSignUp ? 'Sign In' : 'Register'}
