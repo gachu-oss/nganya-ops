@@ -32,6 +32,12 @@ function createSupabaseClient() {
   }
 
   return createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      flowType: 'pkce',
+      detectSessionInUrl: true,
+      persistSession: true,
+      autoRefreshToken: true,
+    },
     global: { fetch: safeFetch },
   })
 }

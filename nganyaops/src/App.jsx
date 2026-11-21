@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, NavLink, useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import { BrowserRouter, Routes, Route, NavLink, Navigate, useNavigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import LandingPage from './components/LandingPage'
@@ -9,8 +10,33 @@ import CrewList from './components/CrewList'
 import TripLogs from './components/TripLogs'
 import MaintenanceLog from './components/MaintenanceLog'
 
+let pendingRootOAuth =
+  typeof window !== 'undefined' &&
+  (/[?&](code|error|error_description)=/.test(window.location.search) ||
+    /[#&](access_token|error|error_description)=/.test(window.location.hash))
+
 function LandingWrapper() {
   const navigate = useNavigate()
+  const { user, loading, authError } = useAuth()
+
+  useEffect(() => {
+    if (!pendingRootOAuth || loading) return
+    pendingRootOAuth = false
+    if (user) {
+      navigate('/dashboard', { replace: true })
+    } else if (authError) {
+      navigate('/login', { replace: true })
+    }
+  }, [loading, user, authError, navigate])
+
+  if (pendingRootOAuth && loading) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center text-sm text-gray-600">
+        Completing sign-in...
+      </div>
+    )
+  }
+
   return <LandingPage onEnterApp={() => navigate('/login')} />
 }
 
@@ -40,6 +66,7 @@ function AppLayout({ children }) {
                 {user?.email}
               </span>
               <button
+                type="button"
                 onClick={signOut}
                 className="text-xs text-gray-700 hover:text-gray-900 underline py-1 px-1 whitespace-nowrap"
               >
@@ -48,7 +75,7 @@ function AppLayout({ children }) {
             </div>
           </div>
 
-          <nav className="flex items-center gap-1.5 overflow-x-auto pb-0.5 lg:pb-0 lg:order-2">
+          <nav aria-label="Main navigation" className="flex items-center gap-1.5 overflow-x-auto pb-0.5 lg:pb-0 lg:order-2">
             {navItems.map((item) => (
               <NavLink
                 key={item.to}
@@ -128,6 +155,7 @@ export function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }

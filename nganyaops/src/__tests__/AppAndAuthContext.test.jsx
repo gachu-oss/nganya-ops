@@ -4,8 +4,10 @@ import { describe, it, expect, vi } from 'vitest'
 import App, { AppRoutes } from '../App'
 import { AuthProvider } from '../context/AuthContext'
 import FleetList from '../components/FleetList'
+import { supabase } from '../supabaseClient'
 
 const mockInsert = vi.fn().mockResolvedValue({ error: null })
+let authChangeCallback = null
 
 vi.mock('../supabaseClient', () => ({
   supabase: {
@@ -17,14 +19,20 @@ vi.mock('../supabaseClient', () => ({
           },
         },
       }),
-      onAuthStateChange: vi.fn(() => ({
-        data: {
-          subscription: {
-            unsubscribe: vi.fn(),
+      onAuthStateChange: vi.fn((cb) => {
+        authChangeCallback = cb
+        return {
+          data: {
+            subscription: {
+              unsubscribe: vi.fn(),
+            },
           },
-        },
-      })),
-      signOut: vi.fn().mockResolvedValue({}),
+        }
+      }),
+      signOut: vi.fn(async () => {
+        authChangeCallback?.('SIGNED_OUT', null)
+        return {}
+      }),
     },
     from: () => {
       const chain = {
@@ -42,11 +50,13 @@ vi.mock('../supabaseClient', () => ({
 }))
 
 describe('App Navigation, AuthProvider & Form Submission', () => {
-  it('renders LandingPage at root route', () => {
+  it('renders LandingPage at root route', async () => {
     render(<App />)
-    expect(
-      screen.getByText('Simple Fleet & Daily Operations Tracking for Matatus')
-    ).toBeInTheDocument()
+    await waitFor(() => {
+      expect(
+        screen.getByText('Simple Fleet & Daily Operations Tracking for Matatus')
+      ).toBeInTheDocument()
+    })
   })
 
   it('renders authenticated layout with user email and navigates across tabs', async () => {
@@ -82,6 +92,29 @@ describe('App Navigation, AuthProvider & Form Submission', () => {
     await waitFor(() => {
       expect(screen.getByText('Log Garage / Maintenance Expense')).toBeInTheDocument()
     })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Log Out' }))
+    await waitFor(() => {
+      expect(screen.getByText('You have been logged out.')).toBeInTheDocument()
+    })
+  })
+
+  it('extracts and clears OAuth error_description from URL on /login', async () => {
+    supabase.auth.getSession.mockResolvedValueOnce({ data: { session: null } })
+    window.history.replaceState({}, '', '/login?error=access_denied&error_description=Google+cancelled')
+
+    render(
+      <AuthProvider>
+        <MemoryRouter initialEntries={['/login?error=access_denied&error_description=Google+cancelled']}>
+          <AppRoutes />
+        </MemoryRouter>
+      </AuthProvider>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('Google cancelled')).toBeInTheDocument()
+    })
+    expect(window.location.search).toBe('')
   })
 
   it('submits a new vehicle form in FleetList', async () => {

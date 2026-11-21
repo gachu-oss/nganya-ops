@@ -4,15 +4,12 @@ import { supabase } from '../supabaseClient'
 function CrewList() {
   const [crew, setCrew] = useState([])
   const [vehicles, setVehicles] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [errorMsg, setErrorMsg] = useState('')
   const [fullName, setFullName] = useState('')
   const [role, setRole] = useState('Driver')
   const [phone, setPhone] = useState('')
   const [assignedPlate, setAssignedPlate] = useState('')
-
-  useEffect(() => {
-    fetchCrew()
-    fetchVehicles()
-  }, [])
 
   async function fetchCrew() {
     const { data, error } = await supabase
@@ -20,28 +17,57 @@ function CrewList() {
       .select('*')
       .order('id', { ascending: false })
 
-    if (!error && data) {
+    if (error) {
+      setErrorMsg('Failed to load crew roster: ' + error.message)
+      return
+    }
+    if (data) {
       setCrew(data)
     }
   }
 
-  async function fetchVehicles() {
-    const { data, error } = await supabase
-      .from('vehicles')
-      .select('plate_number')
-      .order('plate_number', { ascending: true })
+  useEffect(() => {
+    let active = true
 
-    if (!error && data) {
-      setVehicles(data)
-      if (data.length > 0 && !assignedPlate) {
-        setAssignedPlate(data[0].plate_number)
+    async function loadCrewData() {
+      const [crewRes, vehiclesRes] = await Promise.all([
+        supabase.from('crew').select('*').order('id', { ascending: false }),
+        supabase.from('vehicles').select('plate_number').order('plate_number', { ascending: true }),
+      ])
+
+      if (!active) return
+
+      if (crewRes.error || vehiclesRes.error) {
+        setErrorMsg('Failed to load crew data. Please try refreshing.')
+      } else {
+        setErrorMsg('')
       }
+
+      if (crewRes.data) {
+        setCrew(crewRes.data)
+      }
+
+      if (vehiclesRes.data) {
+        setVehicles(vehiclesRes.data)
+        if (vehiclesRes.data.length > 0) {
+          setAssignedPlate((prev) => prev || vehiclesRes.data[0].plate_number)
+        }
+      }
+
+      setLoading(false)
     }
-  }
+
+    loadCrewData()
+
+    return () => {
+      active = false
+    }
+  }, [])
 
   async function handleAddCrew(e) {
     e.preventDefault()
     if (!fullName || !phone || !assignedPlate) return
+    setErrorMsg('')
 
     const { error } = await supabase.from('crew').insert([
       {
@@ -52,31 +78,44 @@ function CrewList() {
       },
     ])
 
-    if (!error) {
-      setFullName('')
-      setPhone('')
-      fetchCrew()
+    if (error) {
+      setErrorMsg('Error saving crew member: ' + error.message)
+      return
     }
+
+    setFullName('')
+    setPhone('')
+    fetchCrew()
   }
 
   async function handleDeleteCrew(id, name) {
     const confirmed = window.confirm(`Remove ${name} from the crew roster?`)
     if (!confirmed) return
+    setErrorMsg('')
 
     const { error } = await supabase.from('crew').delete().eq('id', id)
 
-    if (!error) {
-      fetchCrew()
+    if (error) {
+      setErrorMsg('Failed to delete crew member: ' + error.message)
+      return
     }
+    fetchCrew()
   }
 
   return (
     <div className="space-y-6">
+      {errorMsg && (
+        <div role="alert" className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 text-sm">
+          {errorMsg}
+        </div>
+      )}
+
       <form onSubmit={handleAddCrew} className="bg-white p-4 border border-gray-300">
         <h2 className="font-bold text-gray-900 mb-3">Register Crew Member</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <input
             type="text"
+            aria-label="Full Name"
             placeholder="Full Name (e.g. Kamau Njoroge)"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
@@ -84,6 +123,7 @@ function CrewList() {
             required
           />
           <select
+            aria-label="Crew Role"
             value={role}
             onChange={(e) => setRole(e.target.value)}
             className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm bg-white"
@@ -93,6 +133,7 @@ function CrewList() {
           </select>
           <input
             type="text"
+            aria-label="Phone Number"
             placeholder="Phone (e.g. 0712 345 678)"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
@@ -100,6 +141,7 @@ function CrewList() {
             required
           />
           <select
+            aria-label="Assigned Matatu"
             value={assignedPlate}
             onChange={(e) => setAssignedPlate(e.target.value)}
             className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm bg-white"
@@ -137,7 +179,13 @@ function CrewList() {
             </tr>
           </thead>
           <tbody>
-            {crew.length === 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan="5" className="p-4 text-gray-500 text-center">
+                  Loading crew roster...
+                </td>
+              </tr>
+            ) : crew.length === 0 ? (
               <tr>
                 <td colSpan="5" className="p-4 text-gray-500 text-center">
                   No crew members registered yet.

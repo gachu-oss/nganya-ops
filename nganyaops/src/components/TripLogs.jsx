@@ -1,10 +1,26 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 
+function findAssignedCrew(crewList, plate) {
+  if (!plate) return { driver: '', conductor: '' }
+  const assignedDriver = crewList.find(
+    (c) => c.assigned_plate === plate && c.role === 'Driver'
+  )
+  const assignedConductor = crewList.find(
+    (c) => c.assigned_plate === plate && c.role === 'Conductor'
+  )
+  return {
+    driver: assignedDriver ? assignedDriver.full_name : '',
+    conductor: assignedConductor ? assignedConductor.full_name : '',
+  }
+}
+
 function TripLogs() {
   const [logs, setLogs] = useState([])
   const [vehicles, setVehicles] = useState([])
   const [crewList, setCrewList] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [errorMsg, setErrorMsg] = useState('')
 
   const [plateNumber, setPlateNumber] = useState('')
   const [driverName, setDriverName] = useState('')
@@ -21,24 +37,6 @@ function TripLogs() {
   const [filterPlate, setFilterPlate] = useState('All')
   const [filterDate, setFilterDate] = useState('')
 
-  useEffect(() => {
-    fetchLogs()
-    fetchActiveVehicles()
-    fetchCrew()
-  }, [])
-
-  useEffect(() => {
-    if (!plateNumber || crewList.length === 0) return
-    const assignedDriver = crewList.find(
-      (c) => c.assigned_plate === plateNumber && c.role === 'Driver'
-    )
-    const assignedConductor = crewList.find(
-      (c) => c.assigned_plate === plateNumber && c.role === 'Conductor'
-    )
-    setDriverName(assignedDriver ? assignedDriver.full_name : '')
-    setConductorName(assignedConductor ? assignedConductor.full_name : '')
-  }, [plateNumber, crewList])
-
   async function fetchLogs() {
     const { data, error } = await supabase
       .from('trip_logs')
@@ -46,40 +44,82 @@ function TripLogs() {
       .order('trip_date', { ascending: false })
       .order('id', { ascending: false })
 
-    if (!error && data) {
+    if (error) {
+      setErrorMsg('Failed to load shift logs: ' + error.message)
+      return
+    }
+    if (data) {
       setLogs(data)
     }
   }
 
-  async function fetchActiveVehicles() {
-    const { data, error } = await supabase
-      .from('vehicles')
-      .select('plate_number, status')
-      .eq('status', 'Active')
-      .order('plate_number', { ascending: true })
+  useEffect(() => {
+    let active = true
 
-    if (!error && data) {
-      setVehicles(data)
-      if (data.length > 0 && !plateNumber) {
-        setPlateNumber(data[0].plate_number)
+    async function loadTripData() {
+      const [logsRes, vehiclesRes, crewRes] = await Promise.all([
+        supabase
+          .from('trip_logs')
+          .select('*')
+          .order('trip_date', { ascending: false })
+          .order('id', { ascending: false }),
+        supabase
+          .from('vehicles')
+          .select('plate_number, status')
+          .eq('status', 'Active')
+          .order('plate_number', { ascending: true }),
+        supabase
+          .from('crew')
+          .select('id, full_name, role, assigned_plate')
+          .order('full_name', { ascending: true }),
+      ])
+
+      if (!active) return
+
+      if (logsRes.error || vehiclesRes.error || crewRes.error) {
+        setErrorMsg('Failed to load trip logs. Please try refreshing.')
+      } else {
+        setErrorMsg('')
       }
-    }
-  }
 
-  async function fetchCrew() {
-    const { data, error } = await supabase
-      .from('crew')
-      .select('id, full_name, role, assigned_plate')
-      .order('full_name', { ascending: true })
+      if (logsRes.data) {
+        setLogs(logsRes.data)
+      }
 
-    if (!error && data) {
-      setCrewList(data)
+      const loadedVehicles = vehiclesRes.data || []
+      const loadedCrew = crewRes.data || []
+      setVehicles(loadedVehicles)
+      setCrewList(loadedCrew)
+
+      if (loadedVehicles.length > 0) {
+        const defaultPlate = loadedVehicles[0].plate_number
+        setPlateNumber(defaultPlate)
+        const assigned = findAssignedCrew(loadedCrew, defaultPlate)
+        setDriverName(assigned.driver)
+        setConductorName(assigned.conductor)
+      }
+
+      setLoading(false)
     }
+
+    loadTripData()
+
+    return () => {
+      active = false
+    }
+  }, [])
+
+  function handlePlateChange(nextPlate) {
+    setPlateNumber(nextPlate)
+    const assigned = findAssignedCrew(crewList, nextPlate)
+    setDriverName(assigned.driver)
+    setConductorName(assigned.conductor)
   }
 
   async function handleAddLog(e) {
     e.preventDefault()
     if (!plateNumber || !tripDate || !tripsCount || !grossRevenue) return
+    setErrorMsg('')
 
     const gross = Number(grossRevenue)
     const hasSplit = cashCollected !== '' || mpesaCollected !== ''
@@ -103,7 +143,7 @@ function TripLogs() {
     ])
 
     if (error) {
-      alert('Error saving shift log: ' + error.message)
+      setErrorMsg('Error saving shift log: ' + error.message)
       return
     }
 
@@ -120,12 +160,15 @@ function TripLogs() {
   async function handleDeleteLog(id, plate, date) {
     const confirmed = window.confirm(`Delete shift log for ${plate} on ${date}?`)
     if (!confirmed) return
+    setErrorMsg('')
 
     const { error } = await supabase.from('trip_logs').delete().eq('id', id)
 
-    if (!error) {
-      fetchLogs()
+    if (error) {
+      setErrorMsg('Failed to delete shift log: ' + error.message)
+      return
     }
+    fetchLogs()
   }
 
   const drivers = crewList.filter((c) => c.role === 'Driver')
@@ -144,12 +187,19 @@ function TripLogs() {
 
   return (
     <div className="space-y-6">
+      {errorMsg && (
+        <div role="alert" className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 text-sm">
+          {errorMsg}
+        </div>
+      )}
+
       <form onSubmit={handleAddLog} className="bg-white p-4 border border-gray-300">
         <h2 className="font-bold text-gray-900 mb-3">Log Daily Trip, Revenue & Expenses</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
           <select
+            aria-label="Matatu Plate"
             value={plateNumber}
-            onChange={(e) => setPlateNumber(e.target.value)}
+            onChange={(e) => handlePlateChange(e.target.value)}
             className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm bg-white"
             required
           >
@@ -165,6 +215,7 @@ function TripLogs() {
           </select>
           <input
             type="date"
+            aria-label="Trip Date"
             value={tripDate}
             onChange={(e) => setTripDate(e.target.value)}
             className="w-full min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm"
@@ -173,6 +224,7 @@ function TripLogs() {
           <input
             type="number"
             min="1"
+            aria-label="Trips Completed"
             placeholder="Trips Completed (e.g. 6)"
             value={tripsCount}
             onChange={(e) => setTripsCount(e.target.value)}
@@ -182,6 +234,7 @@ function TripLogs() {
           <input
             type="number"
             min="0"
+            aria-label="Gross Collection (KES)"
             placeholder="Gross Collection (KES)"
             value={grossRevenue}
             onChange={(e) => setGrossRevenue(e.target.value)}
@@ -222,6 +275,7 @@ function TripLogs() {
           <input
             type="number"
             min="0"
+            aria-label="Cash Collected (KES)"
             placeholder="Cash Collected (KES)"
             value={cashCollected}
             onChange={(e) => setCashCollected(e.target.value)}
@@ -231,6 +285,7 @@ function TripLogs() {
           <input
             type="number"
             min="0"
+            aria-label="M-Pesa Till or PoChi (KES)"
             placeholder="M-Pesa Till / PoChi (KES)"
             value={mpesaCollected}
             onChange={(e) => setMpesaCollected(e.target.value)}
@@ -242,6 +297,7 @@ function TripLogs() {
           <input
             type="number"
             min="0"
+            aria-label="Fuel Cost (KES)"
             placeholder="Fuel Cost (KES)"
             value={fuelCost}
             onChange={(e) => setFuelCost(e.target.value)}
@@ -250,6 +306,7 @@ function TripLogs() {
           <input
             type="number"
             min="0"
+            aria-label="Crew Allowance (KES)"
             placeholder="Crew Allowance (KES)"
             value={crewAllowance}
             onChange={(e) => setCrewAllowance(e.target.value)}
@@ -258,6 +315,7 @@ function TripLogs() {
           <input
             type="number"
             min="0"
+            aria-label="Stage or Other Expenses (KES)"
             placeholder="Stage / Other Expenses (KES)"
             value={otherExpenses}
             onChange={(e) => setOtherExpenses(e.target.value)}
@@ -294,6 +352,7 @@ function TripLogs() {
       <div className="bg-white p-3 border border-gray-300 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <select
+            aria-label="Filter by Matatu"
             value={filterPlate}
             onChange={(e) => setFilterPlate(e.target.value)}
             className="w-full sm:w-auto border border-gray-300 px-3 py-2 text-base sm:text-sm bg-white"
@@ -308,6 +367,7 @@ function TripLogs() {
 
           <input
             type="date"
+            aria-label="Filter by Date"
             value={filterDate}
             onChange={(e) => setFilterDate(e.target.value)}
             className="w-full sm:w-auto min-w-0 border border-gray-300 px-3 py-2 text-base sm:text-sm"
@@ -343,7 +403,13 @@ function TripLogs() {
             </tr>
           </thead>
           <tbody>
-            {filteredLogs.length === 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan="8" className="p-4 text-gray-500 text-center">
+                  Loading shift logs...
+                </td>
+              </tr>
+            ) : filteredLogs.length === 0 ? (
               <tr>
                 <td colSpan="8" className="p-4 text-gray-500 text-center">
                   No matching trip logs found.
